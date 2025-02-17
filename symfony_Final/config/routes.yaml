@@ -4,18 +4,6 @@ controllers:
         namespace: App\Controller
     type: attribute
 
-acceuil:
-    path: /acceuil
-    controller: App\Controller\HomeController::bonjour
-
-redirect:
-    path: /redirect
-    controller: App\Controller\HomeController::aurevoir
-
-showtemplate:
-    path: /showtemplate
-    controller: App\Controller\HomeController::showtemplate
-
 products_list:
     path: /products
     controller: App\Controller\HomeController::showproducts
