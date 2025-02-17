@@ -1,5 +1,17 @@
+<<<<<<< HEAD
 controllers:
     resource:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+=======
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+products_list:
+    path: /products
+    controller: App\Controller\HomeController::showproducts
+>>>>>>> emmanuel
