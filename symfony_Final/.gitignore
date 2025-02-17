@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-
-###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
-/vendor/
-###< symfony/framework-bundle ###
-=======
 
 ###> symfony/framework-bundle ###
 /.env.local
@@ -22,4 +10,3 @@
 
 /var/data.db
 ###< symfony/framework-bundle ###
->>>>>>> emmanuel
