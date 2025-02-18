@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-<?php
-
-return [
-    Symfony\Bundle\FrameworkBundle\FrameworkBundle::class => ['all' => true],
-];
-=======
 <?php
 
 return [
@@ -15,4 +8,3 @@ return [
     Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle::class => ['all' => true],
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
 ];
->>>>>>> emmanuel
