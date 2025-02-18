@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\PointsLogRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PointsLogRepository::class)]
@@ -10,64 +11,69 @@ class PointsLog
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user_id = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Users $user = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Groupe $group_id = null;
+    #[ORM\ManyToOne(targetEntity: Groups::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Groups $group = null;
 
-    #[ORM\Column]
-    private ?int $points_change = null;
+    #[ORM\Column(type: 'integer')]
+    private ?int $pointsChange = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $reason = null;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $timestamp = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $timestamp = null;
+
+    // Constructeur
+    public function __construct()
+    {
+        $this->timestamp = new \DateTime(); // Défaut à CURRENT_TIMESTAMP
+    }
+
+    // Getters et Setters
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUserId(): ?User
+    public function getUser(): ?Users
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(?User $user_id): static
+    public function setUser(?Users $user): self
     {
-        $this->user_id = $user_id;
-
+        $this->user = $user;
         return $this;
     }
 
-    public function getGroupId(): ?Groupe
+    public function getGroup(): ?Groups
     {
-        return $this->group_id;
+        return $this->group;
     }
 
-    public function setGroupId(?Groupe $group_id): static
+    public function setGroup(?Groups $group): self
     {
-        $this->group_id = $group_id;
-
+        $this->group = $group;
         return $this;
     }
 
     public function getPointsChange(): ?int
     {
-        return $this->points_change;
+        return $this->pointsChange;
     }
 
-    public function setPointsChange(int $points_change): static
+    public function setPointsChange(int $pointsChange): self
     {
-        $this->points_change = $points_change;
-
+        $this->pointsChange = $pointsChange;
         return $this;
     }
 
@@ -76,22 +82,20 @@ class PointsLog
         return $this->reason;
     }
 
-    public function setReason(string $reason): static
+    public function setReason(?string $reason): self
     {
         $this->reason = $reason;
-
         return $this;
     }
 
-    public function getTimestamp(): ?\DateTimeImmutable
+    public function getTimestamp(): ?\DateTimeInterface
     {
         return $this->timestamp;
     }
 
-    public function setTimestamp(\DateTimeImmutable $timestamp): static
+    public function setTimestamp(\DateTimeInterface $timestamp): self
     {
         $this->timestamp = $timestamp;
-
         return $this;
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Groupe;
-use App\Entity\Habit;
+use App\Entity\Habits;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -24,14 +24,7 @@ class HabitType extends AbstractType
             ->add('difficulty',IntegerType::class)
             ->add('color',TextType::class)
             ->add('periodicity',TextType::class)
-            ->add('creator_id', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'id',
-            ])
-            ->add('group_id', EntityType::class, [
-                'class' => Groupe::class,
-                'choice_label' => 'id',
-            ])
+        
             ->add('valider', SubmitType::class)
         ;
     }
@@ -39,7 +32,7 @@ class HabitType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Habit::class,
+            'data_class' => Habits::class,
         ]);
     }
 }

@@ -2,39 +2,39 @@
 
 namespace App\Repository;
 
-use App\Entity\Habit;
+use App\Entity\Invitations;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Habit>
+ * @extends ServiceEntityRepository<Invitations>
  */
-class HabitRepository extends ServiceEntityRepository
+class InvitationsRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Habit::class);
+        parent::__construct($registry, Invitations::class);
     }
 
     //    /**
-    //     * @return Habit[] Returns an array of Habit objects
+    //     * @return Invitation[] Returns an array of Invitation objects
     //     */
     //    public function findByExampleField($value): array
     //    {
-    //        return $this->createQueryBuilder('h')
-    //            ->andWhere('h.exampleField = :val')
+    //        return $this->createQueryBuilder('i')
+    //            ->andWhere('i.exampleField = :val')
     //            ->setParameter('val', $value)
-    //            ->orderBy('h.id', 'ASC')
+    //            ->orderBy('i.id', 'ASC')
     //            ->setMaxResults(10)
     //            ->getQuery()
     //            ->getResult()
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Habit
+    //    public function findOneBySomeField($value): ?Invitation
     //    {
-    //        return $this->createQueryBuilder('h')
-    //            ->andWhere('h.exampleField = :val')
+    //        return $this->createQueryBuilder('i')
+    //            ->andWhere('i.exampleField = :val')
     //            ->setParameter('val', $value)
     //            ->getQuery()
     //            ->getOneOrNullResult()

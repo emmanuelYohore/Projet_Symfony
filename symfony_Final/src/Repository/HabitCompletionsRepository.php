@@ -2,39 +2,39 @@
 
 namespace App\Repository;
 
-use App\Entity\UserHabit;
+use App\Entity\HabitCompletions;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<UserHabit>
+ * @extends ServiceEntityRepository<HabitCompletions>
  */
-class UserHabitRepository extends ServiceEntityRepository
+class HabitCompletionsRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, UserHabit::class);
+        parent::__construct($registry, HabitCompletions::class);
     }
 
     //    /**
-    //     * @return UserHabit[] Returns an array of UserHabit objects
+    //     * @return HabitCompletion[] Returns an array of HabitCompletion objects
     //     */
     //    public function findByExampleField($value): array
     //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
+    //        return $this->createQueryBuilder('h')
+    //            ->andWhere('h.exampleField = :val')
     //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
+    //            ->orderBy('h.id', 'ASC')
     //            ->setMaxResults(10)
     //            ->getQuery()
     //            ->getResult()
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?UserHabit
+    //    public function findOneBySomeField($value): ?HabitCompletion
     //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
+    //        return $this->createQueryBuilder('h')
+    //            ->andWhere('h.exampleField = :val')
     //            ->setParameter('val', $value)
     //            ->getQuery()
     //            ->getOneOrNullResult()
