@@ -1,6 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace App\Controller;
+
 use App\Document\Group;
 use App\Document\Invitation;
 use App\Document\User;
