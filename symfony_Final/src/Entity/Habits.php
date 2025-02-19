@@ -29,7 +29,7 @@ class Habits
     #[ORM\Column(type: 'string', length: 10)]
     private ?string $periodicity = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'habits')]
+    #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'habits')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Users $creator = null;
 

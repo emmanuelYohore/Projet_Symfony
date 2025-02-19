@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 class UserHabits
 {
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'userHabits')]
+    #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'userHabits')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Users $user = null;
 
