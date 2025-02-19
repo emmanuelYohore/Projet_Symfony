@@ -7,8 +7,13 @@
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-mongodb": "*",
+        "doctrine/annotations": "*",
         "doctrine/dbal": "^3",
         "doctrine/doctrine-migrations-bundle": "^3.4",
+        "doctrine/migrations": "^3.8",
+        "doctrine/mongodb-odm": "^2.7",
+        "doctrine/mongodb-odm-bundle": "^5.0",
         "doctrine/orm": "^3.3",
         "symfony/console": "7.2.*",
         "symfony/dotenv": "7.2.*",
@@ -17,6 +22,11 @@
         "symfony/framework-bundle": "7.2.*",
         "symfony/maker-bundle": "*",
         "symfony/runtime": "7.2.*",
+<<<<<<< HEAD
+=======
+        "symfony/security-csrf": "7.2.*",
+        "symfony/twig-bundle": "7.2.*",
+>>>>>>> guillaume
         "symfony/yaml": "7.2.*"
     },
     "require-dev": {
