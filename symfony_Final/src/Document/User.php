@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
+
 use MongoDB\BSON\ObjectId;
 
 #[ODM\Document(collection: 'users')]
@@ -44,12 +45,16 @@ class User
     #[ODM\Field(type: 'string', nullable: true)]
     public ?string $group_id = null;
 
+    #[ODM\Field(type: "collection")]
+    private array $habit_ids = [];
+
     public function __construct()
     {
         $this->created_at = new \DateTime();
         $this->last_connection = new \DateTime();
         $this->points = 0;
         $this->group_id = null;
+        $this->habit_ids = [];
     }
 
     // Getters et setters
@@ -175,6 +180,17 @@ class User
     {
         $this->group_id = $group_id;
 
+        return $this;
+    }
+
+    public function getHabitIds(): array
+    {
+        return $this->habit_ids;
+    }
+
+    public function addHabitId(string $habitId): self
+    {
+        $this->habit_ids[] = $habitId;
         return $this;
     }
 
