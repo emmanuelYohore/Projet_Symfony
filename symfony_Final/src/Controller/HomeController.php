@@ -1,23 +1,4 @@
 <?php
-<<<<<<< HEAD
-
-namespace App\Controller;
-
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
-
-final class HomeController extends AbstractController
-{
-    #[Route('/home', name: 'app_home')]
-    public function index(): Response
-    {
-        return $this->render('home/index.html.twig', [
-            'controller_name' => 'HomeController',
-        ]);
-    }
-}
-=======
 declare(strict_types=1);
 namespace App\Controller;
 use App\Document\Group;
@@ -39,6 +20,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class HomeController extends AbstractController {
     private DocumentManager $dm;
     private LoggerInterface $logger;
+    
     public function __construct(DocumentManager $dm, LoggerInterface $logger)
     {
         $this->dm = $dm;
@@ -81,4 +63,4 @@ class HomeController extends AbstractController {
         return $this->redirectToRoute('home_index');
     }
 }
->>>>>>> guillaume
+

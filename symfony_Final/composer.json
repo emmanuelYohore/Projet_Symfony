@@ -22,11 +22,8 @@
         "symfony/framework-bundle": "7.2.*",
         "symfony/maker-bundle": "*",
         "symfony/runtime": "7.2.*",
-<<<<<<< HEAD
-=======
         "symfony/security-csrf": "7.2.*",
         "symfony/twig-bundle": "7.2.*",
->>>>>>> guillaume
         "symfony/yaml": "7.2.*"
     },
     "require-dev": {
