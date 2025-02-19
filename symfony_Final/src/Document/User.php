@@ -1,58 +1,34 @@
 <?php
-declare(strict_types=1);
 
 namespace App\Document;
 
-use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
-use MongoDB\BSON\ObjectId;
+use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use Symfony\Component\Security\Core\User\UserInterface;
 
-#[ODM\Document(collection: 'users')]
-#[ODM\Index(keys: ['username' => 'asc'], options: ['unique' => true])]
-#[ODM\Index(keys: ['email' => 'asc'], options: ['unique' => true])]
-class User
+#[MongoDB\Document]
+class User implements UserInterface
 {
-    #[ODM\Id(strategy: 'AUTO')]
-    public ?string $id = null;
+    #[MongoDB\Id]
+    private $id;
 
-    #[ODM\Field(type: 'string')]
-    public string $first_name;
+    #[MongoDB\Field(type: "string")]
+    private $firstName;
 
-    #[ODM\Field(type: 'string')]
-    public string $last_name;
+    #[MongoDB\Field(type: "string")]
+    private $lastName;
 
-    #[ODM\Field(type: 'string')]
-    public string $username;
+    #[MongoDB\Field(type: "string")]
+    private $username;
 
-    #[ODM\Field(type: 'string')]
-    public string $email;
+    #[MongoDB\Field(type: "string", unique: true)]
+    private $email;
 
-    #[ODM\Field(type: 'string')]
-    public string $password;
+    #[MongoDB\Field(type: "string")]
+    private $password;
 
-    #[ODM\Field(type: 'string', nullable: true)]
-    public ?string $profile_picture = null;
+    #[MongoDB\Field(type: "string", nullable: true)]
+    private $profilePicture;
 
-    #[ODM\Field(type: 'date')]
-    public \DateTime $created_at;
-
-    #[ODM\Field(type: 'date')]
-    public \DateTime $last_connection;
-
-    #[ODM\Field(type: 'int')]
-    public int $points;
-
-    #[ODM\Field(type: 'string', nullable: true)]
-    public ?string $group_id = null;
-
-    public function __construct()
-    {
-        $this->created_at = new \DateTime();
-        $this->last_connection = new \DateTime();
-        $this->points = 0;
-        $this->group_id = null;
-    }
-
-    // Getters et setters
     public function getId(): ?string
     {
         return $this->id;
@@ -60,25 +36,23 @@ class User
 
     public function getFirstName(): ?string
     {
-        return $this->first_name;
+        return $this->firstName;
     }
 
-    public function setFirstName(string $first_name): self
+    public function setFirstName(string $firstName): self
     {
-        $this->first_name = $first_name;
-
+        $this->firstName = $firstName;
         return $this;
     }
 
     public function getLastName(): ?string
     {
-        return $this->last_name;
+        return $this->lastName;
     }
 
-    public function setLastName(string $last_name): self
+    public function setLastName(string $lastName): self
     {
-        $this->last_name = $last_name;
-
+        $this->lastName = $lastName;
         return $this;
     }
 
@@ -87,10 +61,14 @@ class User
         return $this->username;
     }
 
+    public function getUserIdentifier(): string
+    {
+        return $this->username;
+    }
+
     public function setUsername(string $username): self
     {
         $this->username = $username;
-
         return $this;
     }
 
@@ -102,7 +80,6 @@ class User
     public function setEmail(string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -114,80 +91,33 @@ class User
     public function setPassword(string $password): self
     {
         $this->password = $password;
-
         return $this;
     }
 
     public function getProfilePicture(): ?string
     {
-        return $this->profile_picture;
+        return $this->profilePicture;
     }
 
-    public function setProfilePicture(?string $profile_picture): self
+    public function setProfilePicture(?string $profilePicture): self
     {
-        $this->profile_picture = $profile_picture;
-
+        $this->profilePicture = $profilePicture;
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    // Implémentation des méthodes de UserInterface
+    public function getRoles(): array
     {
-        return $this->created_at;
+        return ['ROLE_USER'];
     }
 
-    public function setCreatedAt(\DateTime $created_at): self
+    public function getSalt(): ?string
     {
-        $this->created_at = $created_at;
-
-        return $this;
+        return null;
     }
 
-    public function getLastConnection(): ?\DateTime
+    public function eraseCredentials(): void
     {
-        return $this->last_connection;
-    }
-
-    public function setLastConnection(\DateTime $last_connection): self
-    {
-        $this->last_connection = $last_connection;
-
-        return $this;
-    }
-
-    public function getPoints(): ?int
-    {
-        return $this->points;
-    }
-
-    public function setPoints(int $points): self
-    {
-        $this->points = $points;
-
-        return $this;
-    }
-
-    public function getGroupId(): ?string
-    {
-        return $this->group_id;
-    }
-
-    public function setGroupId(?string $group_id): self
-    {
-        $this->group_id = $group_id;
-
-        return $this;
-    }
-
-    // Méthodes pour convertir entre ObjectId et string si nécessaire
-    public function getGroupIdAsObjectId(): ?ObjectId
-    {
-        return $this->group_id ? new ObjectId($this->group_id) : null;
-    }
-
-    public function setGroupIdFromObjectId(?ObjectId $group_id): self
-    {
-        $this->group_id = $group_id ? (string) $group_id : null;
-
-        return $this;
+        // Cette méthode est utilisée si des données sensibles doivent être effacées après authentification.
     }
 }
