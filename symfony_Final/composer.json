@@ -23,6 +23,7 @@
         "symfony/maker-bundle": "*",
         "symfony/monolog-bundle": "^3.10",
         "symfony/runtime": "7.2.*",
+        "symfony/security-bundle": "7.2.*",
         "symfony/security-csrf": "7.2.*",
         "symfony/yaml": "7.2.*"
     },
@@ -64,7 +65,7 @@
     },
     "scripts": {
         "auto-scripts": {
-            "cache:clear": "symfony-cmd",
+            "php -dmemory_limit=512M bin/console cache:clear": "script",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
         },
         "post-install-cmd": [
