@@ -1,5 +1,7 @@
 <?php
 
+ini_set('memory_limit', '2G');
+
 use App\Kernel;
 
 require_once dirname(__DIR__).'/vendor/autoload_runtime.php';

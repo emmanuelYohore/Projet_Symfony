@@ -1,6 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace App\Controller;
+
 use App\Document\Group;
 use App\Document\Invitation;
 use App\Document\User;
@@ -14,7 +17,6 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use MongoDB\BSON\Regex;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
