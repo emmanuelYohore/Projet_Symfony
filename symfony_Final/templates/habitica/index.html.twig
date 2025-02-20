@@ -5,6 +5,9 @@
 {% endblock %}
 {% block body %}
     <h1>Welcome to Habitica!</h1>
+    <p>
+        <a href="{{ path('app_login') }}">Connexion</a>
+    </p>
     <h2>Add a new user</h2>
     {{ form_start(form) }}
         {{ form_row(form.first_name) }}
