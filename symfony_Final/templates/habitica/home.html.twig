@@ -5,6 +5,9 @@
 {% block body %}
     <h1>Welcome to Habitica!</h1>
     <h2>Add a new habit</h2>
+    <p>
+        <a href="{{ path('app_login') }}">Connexion</a>
+    </p>
     {{ form_start(form) }}
         {{ form_row(form.name) }}
         {{ form_row(form.description) }}
@@ -14,3 +17,6 @@
         {{ form_row(form.save) }}
     {{ form_end(form) }}
 {% endblock %}
+{{ form_end(form) }}
+    <h3>Connected User</h2>
+    {% if user.username %}

@@ -28,7 +28,7 @@ class HomeController extends AbstractController {
         $this->logger = $logger;
     }
 
-    #[Route('/habitica-home', name: 'home_index', methods: ['GET', 'POST'])]
+    #[Route('/home', name: 'home_index', methods: ['GET', 'POST'])]
     public function index(Request $request,SessionInterface $session): Response
     {   
         $userRepository = $this->dm->getRepository(User::class);
@@ -65,7 +65,7 @@ class HomeController extends AbstractController {
             return $this->redirectToRoute('home_index');
         }
 
-        return $this->render('habitica/index.html.twig', [
+        return $this->render('habitica/home.html.twig', [
             'users' => $users,
             'form' => $form->createView(),
             'user' => $session->get('connected_user') ? $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]) : null,
