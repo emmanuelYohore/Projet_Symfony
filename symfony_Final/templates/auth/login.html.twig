@@ -11,19 +11,11 @@
         <div style="color: red;">{{ error }}</div>
     {% endif %}
 
-    <form method="post" action="{{ path('app_login') }}">
-        <div>
-            <label for="username">Nom d'utilisateur :</label>
-            <input type="text" id="username" name="username" value="{{ last_username }}" required>
-        </div>
-
-        <div>
-            <label for="password">Mot de passe :</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-
-        <button type="submit">Se connecter</button>
-    </form>
+    {{ form_start(form) }}
+        {{ form_row(form.username) }}
+        {{ form_row(form.password) }}
+        {{ form_row(form.login) }}
+    {{ form_end(form) }}
 
     <p>
         Pas encore inscrit ? <a href="{{ path('home_index') }}">Créer un compte</a>

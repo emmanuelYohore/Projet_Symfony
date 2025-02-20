@@ -1,16 +1,16 @@
 <?php
-declare(strict_types=1);
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Document\User; // Ajout de l'import de User
+use App\Form\LoginType;
+use Doctrine\ODM\MongoDB\DocumentManager;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Document\User;
-use Doctrine\ODM\MongoDB\DocumentManager;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class LoginController extends AbstractController
 {
@@ -22,20 +22,21 @@ class LoginController extends AbstractController
     }
 
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(Request $request, AuthenticationUtils $authenticationUtils, SessionInterface $session): Response
+    public function login(Request $request, SessionInterface $session, FormFactoryInterface $formFactory): Response
     {
-        // Si l'utilisateur est déjà connecté, rediriger vers la page d'accueil
+        // Redirection si l'utilisateur est déjà connecté
         if ($session->get('connected_user')) {
             return $this->redirectToRoute('home_index');
         }
 
-        // Récupère les erreurs de connexion (si elles existent)
-        $error = $authenticationUtils->getLastAuthenticationError();
-        $lastUsername = $authenticationUtils->getLastUsername();
+        $form = $formFactory->create(LoginType::class);
+        $form->handleRequest($request);
+        $error = null;
 
-        if ($request->isMethod('POST')) {
-            $username = $request->request->get('username');
-            $password = $request->request->get('password');
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $username = $data['username'];
+            $password = $data['password'];
 
             $user = $this->dm->getRepository(User::class)->findOneBy(['username' => $username]);
 
@@ -48,15 +49,8 @@ class LoginController extends AbstractController
         }
 
         return $this->render('auth/login.html.twig', [
-            'last_username' => $lastUsername,
+            'form' => $form->createView(),
             'error' => $error,
         ]);
-    }
-
-    #[Route('/logout', name: 'app_logout', methods: ['GET'])]
-    public function logout(SessionInterface $session): Response
-    {
-        $session->remove('connected_user');
-        return $this->redirectToRoute('app_login');
     }
 }
