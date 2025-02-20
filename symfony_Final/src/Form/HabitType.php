@@ -19,6 +19,7 @@ class HabitType extends AbstractType
             ->add('description', TextType::class)
             ->add('difficulty', ChoiceType::class, [
                 'choices' => [
+                    'Very Easy' => 0,
                     'Easy' => 1,
                     'Medium' => 2,
                     'Hard' => 3,

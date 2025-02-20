@@ -68,7 +68,7 @@ public function index(Request $request): Response
 }
 
     #[Route('/habitica-home/delete/{id}', name: 'user_delete', methods: ['POST'])]
-    public function delete(Request $request, string $id): Response
+    public function deleteUser(Request $request, string $id): Response
     {
         $user = $this->dm->getRepository(User::class)->find($id);
         if ($user) {
@@ -112,6 +112,7 @@ public function index(Request $request): Response
     {
         $user = $this->dm->getRepository(User::class)->find($userId);
         $habit = $this->dm->getRepository(Habit::class)->find($habitId);
+        
 
         if (!$user || !$habit) {
             throw $this->createNotFoundException('User or Habit not found');
@@ -125,6 +126,19 @@ public function index(Request $request): Response
             $habitCompletion->setHabit($habit);
             $habitCompletion->setCompletedAt(new \DateTime());
 
+            $pointLog = new PointLog();
+            $pointLog->setUser($user);
+            if ($habit->difficulty === 0) {
+                $pointLog->setPoints(1);
+            } elseif ($habit->difficulty === 1) {
+                $pointLog->setPoints(2);
+            } elseif ($habit->difficulty === 2) {
+                $pointLog->setPoints(5);
+            } elseif ($habit->difficulty === 3) {
+                $pointLog->setPoints(10);
+            }
+
+
             $this->dm->persist($habitCompletion);
         } else {
             $habitCompletion = $this->dm->getRepository(HabitCompletion::class)->findOneBy(['user' => $user, 'habit' => $habit]);
@@ -135,6 +149,22 @@ public function index(Request $request): Response
         
 
         $this->dm->flush();
+
+        return $this->redirectToRoute('home_index');
+    }
+
+    #[Route('/habitica-home/delete_habit/{habitId}', name: 'delete_habit', methods: ['POST'])]
+    public function deleteHabit(Request $request, string $habitId): Response
+    {
+        $habit = $this->dm->getRepository(Habit::class)->find($habitId);
+        $habitCompletions = $this->dm->getRepository(HabitCompletion::class)->findBy(['habit' => $habit]);
+        if ($habit) {
+            foreach ($habitCompletions as $habitCompletion) {
+                $this->dm->remove($habitCompletion);
+            }
+            $this->dm->remove($habit);
+            $this->dm->flush();
+        }
 
         return $this->redirectToRoute('home_index');
     }

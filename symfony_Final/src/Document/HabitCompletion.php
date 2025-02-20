@@ -13,13 +13,13 @@ class HabitCompletion
     public ?string $id = null;
 
     #[ODM\ReferenceOne(targetDocument: User::class)]
-    public User $user;
+    public ?User $user = null;
 
     #[ODM\ReferenceOne(targetDocument: Habit::class)]
-    public Habit $habit;
+    public ?Habit $habit = null;
 
     #[ODM\Field(type: 'date')]
-    public \DateTime $completedAt;
+    public ?\DateTime $completedAt = null;
 
     public function __construct()
     {
@@ -44,7 +44,7 @@ class HabitCompletion
         return $this;
     }
 
-    public function getHabit(): Habit
+    public function getHabit(): ?Habit
     {
         return $this->habit;
     }

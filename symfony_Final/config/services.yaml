@@ -30,4 +30,13 @@ services:
         arguments:
             - App\Document\UserHabit
         tags: ['doctrine_mongodb.odm.repository_service']
+    
+    App\Service\HabitCompletionCleaner:
+        arguments:
+            $dm: '@doctrine_mongodb.odm.document_manager'
+
+    App\Command\CleanHabitCompletionsCommand:
+        tags: ['console.command']
+        arguments:
+            $cleaner: '@App\Service\HabitCompletionCleaner'
         
