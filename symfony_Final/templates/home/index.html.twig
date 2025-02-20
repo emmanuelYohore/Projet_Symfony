@@ -1,20 +1,35 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <h1>Bienvenue, {{ user.username }} !</h1>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <h2>Vos habitudes</h2>
+    {% if userHabits is empty %}
+        <p>Vous n'avez pas encore d'habitudes.</p>
+    {% else %}
+        <ul>
+            {% for habit in userHabits %}
+                <li>
+                    <strong>{{ habit.name }}</strong>: {{ habit.description }}
+                    <span style="color: {{ habit.color }};">⬤</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/stani/Documents/Projet_Symfony/symfony_Final/src/Controller/HomeController.php</code></li>
-        <li>Your template at <code>C:/Users/stani/Documents/Projet_Symfony/symfony_Final/templates/home/index.html.twig</code></li>
-    </ul>
-</div>
+    {% if groupHabits is not empty %}
+        <h2>Les habitudes de votre groupe</h2>
+        <ul>
+            {% for habit in groupHabits %}
+                <li>
+                    <strong>{{ habit.name }}</strong>: {{ habit.description }}
+                    <span style="color: {{ habit.color }};">⬤</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Votre groupe n'a pas encore d'habitudes.</p>
+    {% endif %}
 {% endblock %}
