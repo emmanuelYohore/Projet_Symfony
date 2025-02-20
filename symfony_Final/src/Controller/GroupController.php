@@ -37,7 +37,7 @@ class GroupController extends AbstractController
             return $this->redirectToRoute('home_index');
         }
         $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
-        if (!$user->getGroupId()) 
+        if (!$user->getGroup()) 
         {
             return $this->redirectToRoute('create_group');
         } else {
@@ -62,15 +62,15 @@ class GroupController extends AbstractController
             {
                 $user = $this->dm->getRepository(User::class)->findOneBy(['email' => $email]);
 
-                if ($user && !$user->getGroupId())
+                if ($user && !$user->getGroup())
                 {
-                    $user->setGroupId($group->getId());
+                    $user->setGroup($group);
                     $this->dm->persist($user);
                 }
                 $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
                 if ($user)
                 {
-                    $user->setGroupId($group->getId());
+                    $user->setGroup($group);
                     $this->dm->persist($user);
                 }
             }
@@ -89,7 +89,7 @@ class GroupController extends AbstractController
     {
 
         $connected_user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
-        $group = $this->dm->getRepository(Group::class)->findOneBy(['id' => $connected_user->getGroupId()]);
+        $group = $connected_user->getGroup();
 
         $form = $this->createForm(GroupType::class, $group);
         $form->handleRequest($request);
@@ -103,7 +103,7 @@ class GroupController extends AbstractController
 
                 if ($user)
                 {
-                    $user->setGroupId($group->getId());
+                    $user->setGroup($group);
                     $this->dm->persist($user);
                     $this->createInvitation($connected_user,$user,$group);
                 }
@@ -112,7 +112,7 @@ class GroupController extends AbstractController
         }
         
         $this->dm->flush();
-        $groupUser = $this->getUserByGroup($group->getId());
+        $groupUser = $this->getUserByGroup($group);
         return $this->render('group/addToGroup.html.twig', [
             'form' => $form->createView(),
             'group' => $group,
@@ -120,13 +120,13 @@ class GroupController extends AbstractController
         ]);
     }
 
-    public function getUserByGroup(?string $groupId): array
+    public function getUserByGroup(?Group $group): array
     {
         $users = $this->dm->getRepository(User::class)->findAll();
         $groupUser = [];
         foreach ($users as $user)
         {
-            if ($user->getGroupId() == $groupId)
+            if ($user->getGroup() == $group)
             {
                 array_push($groupUser,$user);
             }
@@ -137,9 +137,9 @@ class GroupController extends AbstractController
     public function createInvitation(User $sender,User $receiver,Group $group)
     {
         $invitation = new Invitation();
-        $invitation->setGroup($group->getId());
-        $invitation->setSender($sender->getId());
-        $invitation->setReceiver($receiver->getId());
+        $invitation->setGroup($group);
+        $invitation->setSender($sender);
+        $invitation->setReceiver($receiver);
         $this->dm->persist($invitation);
         $this->dm->flush();
     }

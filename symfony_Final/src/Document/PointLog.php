@@ -1,90 +1,107 @@
 <?php
 declare(strict_types=1);
+
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
-use MongoDB\BSON\ObjectId;
-use \DateTime;
-use Egulias\EmailValidator\Result\Reason\Reason;
 
 #[ODM\Document(collection: 'points_log')]
-#[ODM\Index(keys: ['user_id' => 'asc'])]
-
-class PointsLog
+class PointLog
 {
+    #[ODM\Id(strategy: 'AUTO')]
+    private ?string $id = null;
 
-    #[ODM\Id(strategy:'AUTO')]
-    private $id;
+    #[ODM\ReferenceOne(targetDocument: User::class)]
+    private ?User $user = null;
 
-    #[ODM\Field(type:'string')]
-    private $user;
+    #[ODM\ReferenceOne(targetDocument: Group::class, nullable: true)]
+    private ?Group $group = null;
 
-    #[ODM\Field(type:"string", nullable: true)]
-    private $group;
+    #[ODM\ReferenceOne(targetDocument: Habit::class, nullable: true)]
+    private ?Habit $habit = null;
 
-    #[ODM\Field(type:'int')]
-    private $pointsChange;
+    #[ODM\Field(type: 'int')]
+    private int $pointsChange;
 
-    #[ODM\Field(type:'string')]
-    private $reason;
+    #[ODM\Field(type: 'string')]
+    private string $reason;
 
-    #[ODM\Field(type:"timestamp")]
-    private $timestamp;
+    #[ODM\Field(type: 'date')]
+    private \DateTime $timestamp;
 
-    public function construct()
+    public function __construct()
     {
-        $now = new DateTime();
-        $this->timestamp = $now->format('d-m-Y H:i:s');
+        $this->timestamp = new \DateTime();
     }
 
-    public function getId() :?int
+    public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function getUser() :string
+    public function getUser(): ?User
     {
         return $this->user;
     }
-    public function setUser(string $user) :self
+
+    public function setUser(User $user): self
     {
         $this->user = $user;
         return $this;
     }
-    
-    public function getGroup() :?string
+
+    public function getGroup(): ?Group
     {
         return $this->group;
     }
-    public function setGroup(string $group) :self
+
+    public function setGroup(?Group $group): self
     {
         $this->group = $group;
         return $this;
     }
 
-    public function getPoints() :int
+    public function getHabit(): ?Habit
     {
-        return $this->pointsChange;
+        return $this->habit;
     }
-    public function setPoints(int $points) :self
+
+    public function setHabit(?Habit $habit): self
     {
-        $this->pointsChange = $points;
+        $this->habit = $habit;
         return $this;
     }
 
-    public function getReason() :string
+    public function getPointsChange(): int
+    {
+        return $this->pointsChange;
+    }
+
+    public function setPointsChange(int $pointsChange): self
+    {
+        $this->pointsChange = $pointsChange;
+        return $this;
+    }
+
+    public function getReason(): string
     {
         return $this->reason;
     }
-    public function setReason(string $reason) :self
+
+    public function setReason(string $reason): self
     {
         $this->reason = $reason;
         return $this;
     }
 
-    public function getTime() :string
+    public function getTimestamp(): \DateTime
     {
         return $this->timestamp;
     }
 
+    public function setTimestamp(\DateTime $timestamp): self
+    {
+        $this->timestamp = $timestamp;
+        return $this;
+    }
 }

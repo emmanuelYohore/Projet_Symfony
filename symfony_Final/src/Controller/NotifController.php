@@ -8,9 +8,8 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Document\Invitation;
-use App\DOcument\User;
+use App\Document\User;
 use App\Document\PointLog;
-use App\Document\PointsLog;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Psr\Log\LoggerInterface;
 
@@ -33,7 +32,7 @@ final class NotifController extends AbstractController
         }
         $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
         $invitations = $this->getInvitationByUser($user->getId());
-        $pointsLogs = $this->getPointsLogByUser($user->getId(),$user->getGroupId());
+        $pointsLogs = $this->getPointsLogByUser($user->getId(),$user->getGroup() ? $user->getGroup()->getId() : null);
 
 
 
@@ -50,19 +49,21 @@ final class NotifController extends AbstractController
         $invitations = [];
         foreach($allInvitations as $invit)
         {
-            if ($invit->getUser() == $userId)
+            array_push($invitations,$invit);
+            if ($invit->getReceiver()->getId() == $userId)
                 array_push($invitations,$invit);
         }
         return $invitations;
     }
 
-    private function getPointsLogByUser(?string $userId, string $groupId = "a"):array
+    private function getPointsLogByUser(?string $userId, ?string $groupId = "a"):array
     {
-        $allPointsLog = $this->dm->getRepository(PointsLog::class)->findAll();
+        $allPointsLog = $this->dm->getRepository(PointLog::class)->findAll();
         $pointsLogs = [];
         foreach($allPointsLog as $log)
         {
-            if ($log->getUser() == $userId || $log->getGroup() == $groupId)
+            array_push($pointsLogs,$log);
+            if ($log->getUser()->getId() == $userId || $log->getGroup()->getId() == $groupId)
             {
                 array_push($pointsLogs,$log);
             }

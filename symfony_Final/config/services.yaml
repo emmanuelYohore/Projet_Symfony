@@ -25,3 +25,19 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Repository\UserHabitRepository:
+        factory: ['@doctrine_mongodb.odm.document_manager', getRepository]
+        arguments:
+            - App\Document\UserHabit
+        tags: ['doctrine_mongodb.odm.repository_service']
+    
+    App\Service\HabitCompletionCleaner:
+        arguments:
+            $dm: '@doctrine_mongodb.odm.document_manager'
+
+    App\Command\CleanHabitCompletionsCommand:
+        tags: ['console.command']
+        arguments:
+            $cleaner: '@App\Service\HabitCompletionCleaner'
+        

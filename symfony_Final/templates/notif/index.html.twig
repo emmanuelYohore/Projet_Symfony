@@ -10,7 +10,12 @@
 
 <div class="example-wrapper">
     <h1>Hello {{ controller_name }}! ✅</h1>
+    {% for log in logs %}
+        <p>{{log.timestamp|date('Y-m-d h:i:s')}}
+    {% endfor %}
     {% for invit in invitations %}
-        <p>
+        <p>Sender : </p>{{invit.sender.username}}
+        <p>Receiver : </p>{{invit.receiver.username}}
+    {% endfor %}
 </div>
 {% endblock %}

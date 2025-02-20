@@ -1,0 +1,24 @@
+{# templates/auth/login.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connexion</title>
+</head>
+<body>
+    <h1>Connexion</h1>
+
+    {% if error %}
+        <div style="color: red;">{{ error }}</div>
+    {% endif %}
+
+    {{ form_start(form) }}
+        {{ form_row(form.username) }}
+        {{ form_row(form.password) }}
+        {{ form_row(form.login) }}
+    {{ form_end(form) }}
+
+    <p>
+        Pas encore inscrit ? <a href="{{ path('home_index') }}">Créer un compte</a>
+    </p>
+</body>
+</html>

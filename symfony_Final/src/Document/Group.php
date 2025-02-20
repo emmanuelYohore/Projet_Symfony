@@ -7,7 +7,6 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use MongoDB\BSON\ObjectId;
 
 #[ODM\Document(collection: 'groups')]
-#[ODM\Index(keys: ['name' => 'asc'])]
 
 class Group
 {
