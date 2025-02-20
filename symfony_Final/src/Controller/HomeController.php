@@ -57,7 +57,7 @@ class HomeController extends AbstractController {
                 
                 $user->setProfilePicture($newFileName);
             }
-            
+            $user->setPassword(password_hash($user->getPassword(),PASSWORD_BCRYPT));
             $this->dm->persist($user);
             $session->set('connected_user',$user->getId());
             $this->dm->flush();
