@@ -26,7 +26,8 @@ class LoginController extends AbstractController
     {
         // Redirection si l'utilisateur est déjà connecté
         if ($session->get('connected_user')) {
-            return $this->redirectToRoute('home_index');
+            return $this->redirectToRoute('user_profile');
+
         }
 
         $form = $formFactory->create(LoginType::class);
@@ -42,7 +43,8 @@ class LoginController extends AbstractController
 
             if ($user && password_verify($password, $user->getPassword())) {
                 $session->set('connected_user', $user->getId());
-                return $this->redirectToRoute('home_index');
+                return $this->redirectToRoute('user_profile');
+
             } else {
                 $error = 'Nom d\'utilisateur ou mot de passe incorrect.';
             }
