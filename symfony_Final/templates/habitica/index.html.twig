@@ -24,7 +24,7 @@
             <b>Username :</b> {{ user.username }}<br>
             <b>Email :</b> {{ user.email }}<br>
             <b>Group :</b> {{ user.group_id }}<br><br>
-            <b>Habits :</b><br>
+            {# <b>Habits :</b><br>
             {% for habit in user.habits %}
                 <span style="color:blue;">{{ habit.name }}</span><br>
                 <span style="color:blue;">{{ habit.description }}</span><br>
@@ -44,6 +44,6 @@
                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
                 <button class="btn">Delete</button>
             </form>
-        </p>
+        </p> #}
     {% endfor %}
 {% endblock %}

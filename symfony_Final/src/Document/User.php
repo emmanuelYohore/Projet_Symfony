@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
-
+use App\Document\Habit;
 use MongoDB\BSON\ObjectId;
 
 #[ODM\Document(collection: 'users')]
@@ -45,8 +45,8 @@ class User
     #[ODM\Field(type: 'string', nullable: true)]
     public ?string $group_id = null;
 
-    #[ODM\Field(type: "collection")]
-    private array $habit_ids = [];
+    #[ODM\ReferenceMany(targetDocument: Habit::class, storeAs: "id")]
+    private array $habits = [];
 
     public function __construct()
     {
@@ -54,7 +54,6 @@ class User
         $this->last_connection = new \DateTime();
         $this->points = 0;
         $this->group_id = null;
-        $this->habit_ids = [];
     }
 
     // Getters et setters
@@ -183,26 +182,23 @@ class User
         return $this;
     }
 
-    public function getHabitIds(): array
+    public function getHabits(): array
     {
-        return $this->habit_ids;
+        return $this->habits;
     }
 
-    public function addHabitId(string $habitId): self
+    public function addHabit(Habit $habits): self
     {
-        $this->habit_ids[] = $habitId;
+        if (!in_array($habits, $this->habits, true)) {
+            $this->habits[] = $habits;
+        }
+
         return $this;
     }
 
-    // Méthodes pour convertir entre ObjectId et string si nécessaire
-    public function getGroupIdAsObjectId(): ?ObjectId
+    public function removeHabit(Habit $habits): self
     {
-        return $this->group_id ? new ObjectId($this->group_id) : null;
-    }
-
-    public function setGroupIdFromObjectId(?ObjectId $group_id): self
-    {
-        $this->group_id = $group_id ? (string) $group_id : null;
+        $this->habits = array_values(array_filter($this->habits, fn($habit) => $habit !== $habits));
 
         return $this;
     }
