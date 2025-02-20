@@ -1,0 +1,32 @@
+{# templates/auth/login.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connexion</title>
+</head>
+<body>
+    <h1>Connexion</h1>
+
+    {% if error %}
+        <div style="color: red;">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="{{ path('app_login') }}">
+        <div>
+            <label for="username">Nom d'utilisateur :</label>
+            <input type="text" id="username" name="username" value="{{ last_username }}" required>
+        </div>
+
+        <div>
+            <label for="password">Mot de passe :</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <button type="submit">Se connecter</button>
+    </form>
+
+    <p>
+        Pas encore inscrit ? <a href="{{ path('home_index') }}">Créer un compte</a>
+    </p>
+</body>
+</html>
