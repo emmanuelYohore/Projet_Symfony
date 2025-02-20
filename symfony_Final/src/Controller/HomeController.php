@@ -14,6 +14,7 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use MongoDB\BSON\Regex;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,37 +28,42 @@ class HomeController extends AbstractController {
         $this->logger = $logger;
     }
 
-    #[Route('/habitica-home', name: 'home_index')]
-public function index(Request $request): Response
-{
-    $users = $this->dm->getRepository(User::class)->findAll();
-    $habits = $this->dm->getRepository(Habit::class)->findAll();
-    $groups = [];
+    #[Route('/habitica-home', name: 'home_index', methods: ['GET', 'POST'])]
+    public function index(Request $request,SessionInterface $session): Response
+    {   
+        $userRepository = $this->dm->getRepository(User::class);
+        $users = $userRepository->findAll();
+        $id = $session->get('connected_user');
+        $user = new User();
+        $form = $this->createForm(UserType::class, $user);
+        $form->handleRequest($request);
 
-    $user = new User();
-    $form = $this->createForm(UserType::class, $user);
-    $form->handleRequest($request);
+        
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        $this->dm->persist($user);
-        $this->dm->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $profilePicture = $form->get("profile_picture")->getData();
 
-        return $this->redirectToRoute('home_index');
-    }
-
-    foreach ($users as $user) {
-        $userHabits = [];
-        foreach ($user->getHabitIds() as $habitId) {
-            $habit = $this->dm->getRepository(Habit::class)->find($habitId);
-            if ($habit) {
-                $userHabits[] = $habit;
+            if ($profilePicture) {
+                $originalFileName = pathinfo($profilePicture->getClientOriginalName(),PATHINFO_FILENAME);
+                $newFileName = $originalFileName . '-' . uniqid() . '.' . $profilePicture->guessExtension();
+                try {
+                    $profilePicture->move(
+                        $this->getParameter('picture_directory'), // Assure-toi d’avoir ce paramètre configuré dans services.yaml
+                        $newFileName
+                    );
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Une erreur est survenue lors de l\'upload de l\'image.');
+                    return $this->redirectToRoute('app_register');
+                }
+                
+                $user->setProfilePicture($newFileName);
             }
+            
+            $this->dm->persist($user);
+            $session->set('connected_user',$user->getId());
+            $this->dm->flush();
+            return $this->redirectToRoute('home_index');
         }
-        $user->habits = $userHabits; 
-
-        $completedHabits = $this->dm->getRepository(HabitCompletion::class)->findBy(['user' => $user]);
-        $user->completedHabits = array_map(fn($completion) => $completion->getHabit()->getId(), $completedHabits);
-    }
 
     return $this->render('habitica/index.html.twig', [
         'users' => $users,
