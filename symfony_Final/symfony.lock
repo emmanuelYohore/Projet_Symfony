@@ -187,11 +187,7 @@
             "ref": "8c1c4e28d26a124b0bb273f537ca8ce443472bfd"
         },
         "files": [
-<<<<<<< HEAD
-            "./config/packages/validator.yaml"
-=======
             "config/packages/validator.yaml"
->>>>>>> emmanuel
         ]
     },
     "symfony/web-profiler-bundle": {

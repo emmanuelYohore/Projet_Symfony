@@ -15,11 +15,7 @@
         "doctrine/mongodb-odm": "^2.7",
         "doctrine/mongodb-odm-bundle": "^5.2",
         "doctrine/orm": "^3.3",
-<<<<<<< HEAD
-        "mongodb/mongodb": "^1.20",
-=======
         "symfony/asset": "7.2.*",
->>>>>>> emmanuel
         "symfony/console": "7.2.*",
         "symfony/dotenv": "7.2.*",
         "symfony/flex": "^2",

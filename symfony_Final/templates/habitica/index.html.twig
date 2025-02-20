@@ -18,7 +18,10 @@
         {{ form_row(form.profile_picture) }}
         {{ form_row(form.save) }}
     {{ form_end(form) }}
-
+    <h3>Connected User</h2>
+    {% if user.username %}
+        <b>Username :</b> {{user.username}}
+    {% endif %}
     <h2>Existing users</h2>
     {% for user in users %}
         <p>

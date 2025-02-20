@@ -25,10 +25,6 @@ class LoginController extends AbstractController
     public function login(Request $request, SessionInterface $session, FormFactoryInterface $formFactory): Response
     {
        
-        if ($session->get('connected_user')) {
-            return $this->redirectToRoute('user_profile');
-        }
-
         $form = $formFactory->create(LoginType::class);
         $form->handleRequest($request);
         $error = null;

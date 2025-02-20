@@ -68,7 +68,10 @@ class HomeController extends AbstractController {
         return $this->render('habitica/index.html.twig', [
             'users' => $users,
             'form' => $form->createView(),
+            'user' => $session->get('connected_user') ? $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]) : null,
         ]);
+
+
     }
 
     #[Route('/habitica-home/delete/{id}', name: 'user_delete', methods: ['POST'])]
