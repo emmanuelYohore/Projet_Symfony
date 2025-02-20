@@ -8,7 +8,7 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 /**
  * @ODM\Document(repositoryClass=PointsLogRepository::class)
  */
-class PointsLog
+class PointLog
 {
     /**
      * @ODM\Id(strategy="AUTO")

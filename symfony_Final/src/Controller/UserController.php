@@ -3,12 +3,19 @@
 namespace App\Controller;
 
 use App\Document\User;
+<<<<<<< HEAD
 use App\Document\Habit;
 use App\Document\Group;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+=======
+use Doctrine\ODM\MongoDB\DocumentManager;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+>>>>>>> emmanuel
 use Symfony\Component\Routing\Annotation\Route;
 
 class UserController extends AbstractController
@@ -20,6 +27,7 @@ class UserController extends AbstractController
         $this->dm = $dm;
     }
 
+<<<<<<< HEAD
     // ✅ 1. Ajouter une habitude à un utilisateur
     #[Route('/user/{userId}/add-habit', name: 'add_habit', methods: ['POST'])]
     public function addHabit(Request $request, string $userId): Response
@@ -73,6 +81,22 @@ class UserController extends AbstractController
         return $this->render('user/profile.html.twig', [
             'user' => $user,
             'habits' => $user->getHabits(),
+=======
+    #[Route('/user/profile', name: 'user_profile', methods: ['GET'])]
+    public function profile(SessionInterface $session): Response
+    {
+        $userId = $session->get('connected_user');
+
+        if (!$userId) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $user = $this->dm->getRepository(User::class)->find($userId);
+
+
+        return $this->render('user/profile.html.twig', [
+            'user' => $user,
+>>>>>>> emmanuel
         ]);
     }
 }

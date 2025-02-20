@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {# templates/user/profile.html.twig #}
 {% extends 'base.html.twig' %}
 
@@ -33,3 +34,30 @@
         <button type="submit">Ajouter une habitude</button>
     </form>
 {% endblock %}
+=======
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profil de {{ user.username }}</title>
+</head>
+<body>
+    <h1>Profil de {{ user.username }}</h1>
+
+    <div>
+        <p><strong>Nom d'utilisateur :</strong> {{ user.username }}</p>
+        <p><strong>Email :</strong> {{ user.email }}</p>
+
+        {% if user.profilePicture %}
+            <p><strong>Photo de profil :</strong></p>
+            <img src="{{ asset('uploads/' ~ user.profilePicture) }}" alt="Photo de profil" width="150">
+        {% else %}
+            <p>Aucune photo de profil disponible.</p>
+        {% endif %}
+
+        <p><strong>Date de création :</strong> {{ user.createdAt|date('d/m/Y H:i') }}</p>
+
+        <a href="{{ path('home_index') }}">Retour à l'accueil</a>
+    </div>
+</body>
+</html>
+>>>>>>> emmanuel
