@@ -47,7 +47,7 @@ class HomeController extends AbstractController {
                 $newFileName = $originalFileName . '-' . uniqid() . '.' . $profilePicture->guessExtension();
                 try {
                     $profilePicture->move(
-                        $this->getParameter('image_directory'), // Assure-toi d’avoir ce paramètre configuré dans services.yaml
+                        $this->getParameter('picture_directory'), // Assure-toi d’avoir ce paramètre configuré dans services.yaml
                         $newFileName
                     );
                 } catch (FileException $e) {

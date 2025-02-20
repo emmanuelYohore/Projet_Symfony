@@ -40,7 +40,7 @@ class User
     #[ORM\Column]
     private ?int $points = null;
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
     }
