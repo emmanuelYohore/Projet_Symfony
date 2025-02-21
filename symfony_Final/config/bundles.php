@@ -9,4 +9,5 @@ return [
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
     Doctrine\Bundle\MongoDBBundle\DoctrineMongoDBBundle::class => ['all' => true],
     Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
+    Zenstruck\ScheduleBundle\ZenstruckScheduleBundle::class => ['all' => true],
 ];

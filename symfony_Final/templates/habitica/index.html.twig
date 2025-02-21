@@ -35,7 +35,14 @@
                 <span style="color:blue;">{{ habit.periodicity }}</span><br>
                 <form action="{{ path('complete_habit', {'userId': user.id, 'habitId': habit.id}) }}" method="post">
                     <input type="hidden" name="completed" value="0">
-                    <input type="checkbox" name="completed" value="1" {% if habit.id in user.completedHabits %}checked{% endif %} onchange="this.form.submit()"><br>
+                    <input type="checkbox" name="completed" value="1" 
+                        {% for completedHabit in user.completedHabits %}
+                            {% if completedHabit.habitId == habit.id and completedHabit.isCompleted %}
+                                checked
+                            {% endif %}
+                        {% endfor %}
+                        onchange="this.form.submit()">
+                    <br>
                 </form>
                 <form method="post" action="{{ path('delete_habit', {'habitId': habit.id}) }}" onsubmit="return confirm('Are you sure you want to delete this habit?');">
                     <input type="hidden" name="_token" value="{{ csrf_token('deleteHabit' ~ habit.id) }}">

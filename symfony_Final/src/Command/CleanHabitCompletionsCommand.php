@@ -8,6 +8,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Psr\Log\LoggerInterface;
 
 #[AsCommand(
     name: 'app:clean-habit-completions',
@@ -16,11 +17,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class CleanHabitCompletionsCommand extends Command
 {
     private HabitCompletionCleaner $cleaner;
+    private LoggerInterface $logger;
 
-    public function __construct(HabitCompletionCleaner $cleaner)
+    public function __construct(HabitCompletionCleaner $cleaner, LoggerInterface $logger)
     {
         parent::__construct();
         $this->cleaner = $cleaner;
+        $this->logger = $logger;
     }
 
     protected function configure()
@@ -34,10 +37,13 @@ class CleanHabitCompletionsCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         while (true) {
+            $this->logger->info('Starting process to clean habit completions.');
             $this->cleaner->clean();
+            $this->logger->info('Process succeeded.');
+
             $io->success('Checked and cleaned habit completions.');
 
-            sleep(3600);
+            sleep(60);
         }
 
         return Command::SUCCESS;

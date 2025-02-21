@@ -82,8 +82,13 @@ class HomeController extends AbstractController {
             $user->habits = $userHabits; 
     
             $completedHabits = $this->dm->getRepository(HabitCompletion::class)->findBy(['user' => $user]);
-            $user->completedHabits = array_map(fn($completion) => $completion->getHabit()->getId(), $completedHabits);
-        }
+            $user->completedHabits = array_map(function($completion) {
+                return [
+                    'habitId' => $completion->getHabit()->getId(),
+                    'isCompleted' => $completion->isCompleted() // Assurez-vous que la méthode isCompleted() existe dans HabitCompletion
+                ];
+            }, $completedHabits);
+            }
 
     return $this->render('habitica/index.html.twig', [
         'users' => $users,
@@ -124,6 +129,22 @@ class HomeController extends AbstractController {
             $user->addHabitId($habit->id);
             $this->dm->flush();
 
+            $habitCompletion = new HabitCompletion();
+            $habitCompletion->setUser($user);
+            $habitCompletion->setHabit($habit);
+            $habitCompletion->setCompletedAt(null);
+            $habitCompletion->setStartDate((new \DateTime())->setTime(4, 0));
+
+            if ($habit->getPeriodicity() === 'daily') {
+                $habitCompletion->setEndDate((new \DateTime())->modify('+1 day')->setTime(4, 0));
+            } elseif ($habit->getPeriodicity() === 'weekly') {
+                $habitCompletion->setEndDate((new \DateTime())->modify('next Sunday')->setTime(4, 0));
+            } elseif ($habit->getPeriodicity() === 'monthly') {
+                $habitCompletion->setEndDate((new \DateTime())->modify('first day of next month')->setTime(4, 0));
+            }
+
+            $this->dm->persist($habitCompletion);
+            $this->dm->flush();
             return $this->redirectToRoute('home_index');
         }
 
@@ -147,9 +168,15 @@ class HomeController extends AbstractController {
         $completed = $request->request->get('completed') === '1';
 
         if ($completed) {
-            $habitCompletion = new HabitCompletion();
-            $habitCompletion->setUser($user);
-            $habitCompletion->setHabit($habit);
+            $habitCompletion = $this->dm->getRepository(HabitCompletion::class)->findOneBy(['user' => $user, 'habit' => $habit]);
+            
+            if (!$habitCompletion) {
+                $habitCompletion = new HabitCompletion();
+                $habitCompletion->setUser($user);
+                $habitCompletion->setHabit($habit);
+            }
+
+            $habitCompletion->setCompleted(true);
             $habitCompletion->setCompletedAt(new \DateTime());
 
             $pointLog = new PointLog();
@@ -190,12 +217,21 @@ class HomeController extends AbstractController {
             $this->dm->persist($habitCompletion);
         } else {
             $habitCompletion = $this->dm->getRepository(HabitCompletion::class)->findOneBy(['user' => $user, 'habit' => $habit]);
-            if ($habitCompletion) {
-                $this->dm->remove($habitCompletion);
+            if ($habitCompletion && $habitCompletion->isCompleted()) {
+                $habitCompletion->setCompleted(false);
+                $habitCompletion->setCompletedAt(null);
                 $pointLog = $this->dm->getRepository(PointLog::class)->findOneBy(['user' => $user, 'habit' => $habit]);
                 if ($pointLog) {
                     $this->dm->remove($pointLog);
-                    $user->setPoints($user->getPoints() - $pointLog->getPointsChange());
+                    if ($habit->difficulty === 0) {
+                        $user->setPoints($user->getPoints() - 1);
+                    } elseif ($habit->difficulty === 1) {
+                        $user->setPoints($user->getPoints() - 2);
+                    } elseif ($habit->difficulty === 2) {
+                        $user->setPoints($user->getPoints() - 5);
+                    } elseif ($habit->difficulty === 3) {
+                        $user->setPoints($user->getPoints() - 10);
+                    }
                 }
             }
         }
@@ -210,13 +246,20 @@ class HomeController extends AbstractController {
     public function deleteHabit(Request $request, string $habitId): Response
     {
         $habit = $this->dm->getRepository(Habit::class)->find($habitId);
-        $habitCompletions = $this->dm->getRepository(HabitCompletion::class)->findBy(['habit' => $habit]);
         if ($habit) {
-            foreach ($habitCompletions as $habitCompletion) {
-                $this->dm->remove($habitCompletion);
+            $user = $this->dm->getRepository(User::class)->find($habit->creator_id);
+            if ($user) {
+                $habitCompletions = $this->dm->getRepository(HabitCompletion::class)->findBy(['habit' => $habit]);
+                foreach ($habitCompletions as $habitCompletion) {
+                    $this->dm->remove($habitCompletion);
+                }
+
+                $user->removeHabitId($habitId);
+                $this->dm->persist($user);
+
+                $this->dm->remove($habit);
+                $this->dm->flush();
             }
-            $this->dm->remove($habit);
-            $this->dm->flush();
         }
 
         return $this->redirectToRoute('home_index');
