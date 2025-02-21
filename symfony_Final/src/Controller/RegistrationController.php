@@ -30,7 +30,7 @@ class RegistrationController extends AbstractController
 
         // Si le formulaire est soumis et valide
         if ($form->isSubmitted() && $form->isValid()) {
-            // Hashage du mot de passe
+
             $profilePicture = $form->get("profile_picture")->getData();
 
             if ($profilePicture)
