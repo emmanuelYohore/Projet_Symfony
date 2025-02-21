@@ -7,7 +7,6 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use MongoDB\BSON\ObjectId;
 
 #[ODM\Document(collection: 'groups')]
-#[ODM\Index(keys: ['name' => 'asc'])]
 
 class Group
 {
@@ -20,6 +19,9 @@ class Group
 
     #[ODM\Field(type: "int")]
     private $totalPoints;
+
+    #[ODM\ReferenceOne(targetDocument: User::class)]
+    private ?User $creator = null;
 
     public function __construct()
     {
@@ -49,6 +51,16 @@ class Group
     }
     public function setPoints(int $points): self{
         $this->totalPoints = $points;
+        return $this;
+    }
+
+    public function getCreator(): ?User {
+        return $this->creator;
+    }
+
+    public function setCreator(User $user): self
+    {
+        $this->creator = $user;
         return $this;
     }
 }
