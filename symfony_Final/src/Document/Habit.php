@@ -6,6 +6,7 @@ namespace App\Document;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use MongoDB\BSON\ObjectId;
 
+
 #[ODM\Document(collection: 'habits')]
 class Habit
 {

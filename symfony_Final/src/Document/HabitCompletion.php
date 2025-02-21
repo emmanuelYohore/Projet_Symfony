@@ -18,12 +18,16 @@ class HabitCompletion
     #[ODM\ReferenceOne(targetDocument: Habit::class)]
     public ?Habit $habit = null;
 
+    #[ODM\Field(type: 'bool', nullable: true)]
+    public ?bool $completed = null;
+    
     #[ODM\Field(type: 'date')]
     public ?\DateTime $completedAt = null;
 
     public function __construct()
     {
-        // Initialisation des valeurs par défaut si nécessaire
+        $this->completed = true;
+        $this->completedAt = new \DateTime();
     }
 
     // Getters et setters
@@ -55,6 +59,18 @@ class HabitCompletion
 
         return $this;
     }
+
+    public function getCompleted():bool
+    {
+        return $this->completed;
+    }
+
+    public function setCompleted(bool $comp) :self
+    {
+        $this->completed = $comp;
+        return $this;
+    }
+
 
     public function getCompletedAt(): \DateTime
     {

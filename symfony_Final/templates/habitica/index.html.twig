@@ -16,6 +16,7 @@
         {{ form_row(form.save) }}
     {{ form_end(form) }}
 
+    
     <h3>Connected User</h2>
     {% if user.username %}
         <b>Username :</b> {{user.username}}
@@ -23,7 +24,7 @@
     <h2>Existing users</h2>
     {% for user in users %}
         <p>
-            <span style="color:deeppink;"><b>First name: </b>{{ user.first_name }}</span><br>
+            <span style="color:#0000FF;"><b>First name: </b>{{ user.first_name }}</span><br>
             <b>UserId :</b> {{user.id}}<br>
             <b>Last name :</b> {{ user.last_name }}<br>
             <b>Username :</b> {{ user.username }}<br>
@@ -33,7 +34,7 @@
             {% if user.group %}
                 <b>Groupe : </b> {{user.group.id}}<br>
             {% endif %}
-            {#
+            
             <b>Habits :</b><br>
             {% for habit in user.habits %}
                 <span style="color:blue;">{{ habit.name }}</span><br>
@@ -63,7 +64,7 @@
                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
                 <button class="btn">Delete</button>
             </form>
-            #}
+            
         </p>
 
     {% endfor %}

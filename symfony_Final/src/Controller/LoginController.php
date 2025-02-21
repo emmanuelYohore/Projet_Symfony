@@ -24,10 +24,6 @@ class LoginController extends AbstractController
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(Request $request, SessionInterface $session, FormFactoryInterface $formFactory): Response
     {
-        // Redirection si l'utilisateur est déjà connecté
-        if ($session->get('connected_user')) {
-            return $this->redirectToRoute('user_profile');
-        }
 
         $form = $formFactory->create(LoginType::class);
         $form->handleRequest($request);

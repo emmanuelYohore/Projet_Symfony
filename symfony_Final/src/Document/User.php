@@ -45,7 +45,7 @@ class User
     public ?Group $group = null;
 
     #[ODM\Field(type: "collection")]
-    private array $habit_ids = [];
+    public array $habit_ids = [];
 
     public function __construct()
     {

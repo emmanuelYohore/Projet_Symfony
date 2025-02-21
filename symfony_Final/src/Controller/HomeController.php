@@ -43,8 +43,10 @@ class HomeController extends AbstractController {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
-        $invit = $this->getInvitations($session);
-        $logs = $this->getPointsLog($session);
+        if ($id) {
+            $invit = $this->getInvitations($session);
+            $logs = $this->getPointsLog($session);
+        }
         
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -93,7 +95,7 @@ class HomeController extends AbstractController {
         'form' => $form->createView(),
         'logs' => $logs,
         'invits' => $invit,
-        'user' => $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]),
+        'user' => $session->get('connected_user') ? $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]) : null,
     ]);
 }
 
