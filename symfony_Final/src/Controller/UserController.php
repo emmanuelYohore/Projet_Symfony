@@ -34,4 +34,8 @@ class UserController extends AbstractController
             'user' => $user,
         ]);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/emmanuel

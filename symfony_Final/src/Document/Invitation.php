@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+declare(strict_types=1);
 
 namespace App\Document;
 
@@ -10,6 +11,7 @@ use MongoDB\BSON\ObjectId;
 
 class Invitation
 {
+    #[ODM\Id(strategy: "AUTO")]
     #[ODM\Id(strategy: "AUTO")]
     private $id;
 
@@ -22,6 +24,7 @@ class Invitation
     #[ODM\ReferenceOne(targetDocument:Group::class)]
     private ?Group $group = null;
 
+    #[ODM\Field(type: 'string')]
     #[ODM\Field(type: 'string')]
     private $status;
 

@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class GroupController extends AbstractController
+class GroupController extends AbstractController
 {
     private DocumentManager $dm;
     private LoggerInterface $logger;
@@ -256,5 +257,29 @@ class GroupController extends AbstractController
             }
         }
         return $taskCompleteGroup;
+    }
+
+    public function getUserByGroup(?string $groupId): array
+    {
+        $users = $this->dm->getRepository(User::class)->findAll();
+        $groupUser = [];
+        foreach ($users as $user)
+        {
+            if ($user->getGroupId() == $groupId)
+            {
+                array_push($groupUser,$user);
+            }
+        }
+        return $groupUser;
+    }
+
+    public function createInvitation(User $sender,User $receiver,Group $group)
+    {
+        $invitation = new Invitation();
+        $invitation->setGroup($group->getId());
+        $invitation->setSender($sender->getId());
+        $invitation->setReceiver($receiver->getId());
+        $this->dm->persist($invitation);
+        $this->dm->flush();
     }
 }
