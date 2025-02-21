@@ -6,6 +6,7 @@ namespace App\Document;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use MongoDB\BSON\ObjectId;
 
+
 #[ODM\Document(collection: 'habits')]
 class Habit
 {
@@ -42,6 +43,12 @@ class Habit
     public function getId(): ?string
     {
         return $this->id;
+    }
+
+    public function setId(?string $id):self
+    {
+        $this->id = $id;
+        return $this;
     }
 
     public function getName(): ?string

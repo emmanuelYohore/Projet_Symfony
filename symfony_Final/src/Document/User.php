@@ -42,11 +42,11 @@ class User
     #[ODM\Field(type: 'int')]
     public int $points;
 
-    #[ODM\Field(type: 'string', nullable: true)]
-    public ?string $group_id = null;
+    #[ODM\ReferenceOne(targetDocument: Group::class)]
+    public ?Group $group = null;
 
     #[ODM\Field(type: "collection")]
-    private array $habit_ids = [];
+    public array $habit_ids = [];
 
     #[ODM\Field(type: "bool")]
     private bool $created_habit_today = false;
@@ -56,7 +56,6 @@ class User
         $this->created_at = new \DateTime();
         $this->last_connection = new \DateTime();
         $this->points = 0;
-        $this->group_id = null;
         $this->habit_ids = [];
     }
 
@@ -174,14 +173,14 @@ class User
         return $this;
     }
 
-    public function getGroupId(): ?string
+    public function getGroup(): ?Group
     {
-        return $this->group_id;
+        return $this->group;
     }
 
-    public function setGroupId(?string $group_id): self
+    public function setGroup(?Group $group): self
     {
-        $this->group_id = $group_id;
+        $this->group = $group;
 
         return $this;
     }
@@ -209,12 +208,12 @@ class User
     // Méthodes pour convertir entre ObjectId et string si nécessaire
     public function getGroupIdAsObjectId(): ?ObjectId
     {
-        return $this->group_id ? new ObjectId($this->group_id) : null;
+        return $this->group ? new ObjectId($this->group) : null;
     }
 
-    public function setGroupIdFromObjectId(?ObjectId $group_id): self
+    public function setGroupIdFromObjectId(?ObjectId $group): self
     {
-        $this->group_id = $group_id ? (string) $group_id : null;
+        $this->group = $group ? (string) $group : null;
 
         return $this;
     }

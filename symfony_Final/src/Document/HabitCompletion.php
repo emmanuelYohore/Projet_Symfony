@@ -32,7 +32,8 @@ class HabitCompletion
 
     public function __construct()
     {
-        // Initialisation des valeurs par défaut si nécessaire
+        $this->completed = true;
+        $this->completedAt = new \DateTime();
     }
 
     // Getters et setters
