@@ -26,7 +26,14 @@ final class NotifController extends AbstractController
 
     #[Route('/notif', name: 'app_notif')]
     public function index(Request $request,SessionInterface $session): Response
-    {
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
         if (!$session->get('connected_user'))
         {
             return $this->redirectToRoute('home_index');
@@ -41,7 +48,8 @@ final class NotifController extends AbstractController
             'logs' => $pointsLogs,
             'invitations' => $invitations,
             'controller_name' => 'NotifController',
-            'allNotifs' => $this->getOrderedNotifs($pointsLogs,$invitations)
+            'allNotifs' => $this->getOrderedNotifs($pointsLogs,$invitations),
+            'connected' => $connected
         ]);
     }
 
@@ -86,7 +94,14 @@ final class NotifController extends AbstractController
 
     #[Route('/accept/{groupId}/{invitId}', name: "accept_invit", methods: ['POST'])]
     public function acceptInvitation(Request $request, SessionInterface $session, string $groupId, string $invitId) : Response
-    {
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
         $group = $this->dm->getRepository(Group::class)->find($groupId);
         $user = $this->dm->getRepository(User::class)->find($session->get('connected_user'));
         $user->setGroup($group);
@@ -99,12 +114,21 @@ final class NotifController extends AbstractController
         $this->dm->persist($pointLog);
         $this->dm->persist($user);
         $this->dm->flush();
-        return $this->redirectToRoute('app_notif');
+        return $this->redirectToRoute('app_notif', [
+            'connected' => $connected
+        ]);
     }
 
     #[Route('/decline/{groupId}/{invitId}', name: "decline_invit", methods: ['POST'])]
     public function declineInvitation(Request $request, SessionInterface $session, string $groupId, string $invitId) : Response
-    {
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+        
         $group = $this->dm->getRepository(Group::class)->find($groupId);
         $invit = $this->dm->getRepository(Invitation::class)->find($invitId);
         $user = $this->dm->getRepository(User::class)->find($session->get('connected_user'));
@@ -117,7 +141,9 @@ final class NotifController extends AbstractController
         $this->removeInvitation($invitId);
         $this->dm->remove($invit);
         $this->dm->flush();
-        return $this->redirectToRoute('app_notif');
+        return $this->redirectToRoute('app_notif', [
+            'connected' => $connected
+        ]);
     }
 
     private function removeInvitation(string $invitation)

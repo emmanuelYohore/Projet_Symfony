@@ -34,7 +34,14 @@ class GroupController extends AbstractController
 
     #[Route('/group', name: 'app_group')]
     public function index(Request $request,SessionInterface $session): Response
-    {
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
         if (!$session->get('connected_user'))
         {
             return $this->redirectToRoute('home_index');
@@ -42,9 +49,13 @@ class GroupController extends AbstractController
         $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
         if (!$user->getGroup()) 
         {
-            return $this->redirectToRoute('create_group');
+            return $this->redirectToRoute('create_group', [
+                'connected' => $connected,
+            ]);
         } else {
-            return $this->redirectToRoute('view_group');
+            return $this->redirectToRoute('view_group', [
+                'connected' => $connected,
+            ]);
         }
     }
 
@@ -54,6 +65,13 @@ class GroupController extends AbstractController
         $group = new Group();
         $form = $this->createForm(GroupType::class, $group);
         $form->handleRequest($request);
+
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
 
         if ($form->isSubmitted() && $form->isValid())
         {
@@ -79,17 +97,26 @@ class GroupController extends AbstractController
             }
 
             $this->dm->flush();
-            return $this->redirectToRoute('view_group');
+            return $this->redirectToRoute('view_group', [
+                'connected' => $connected,
+            ]);
         }
 
         return $this->render('group/createGroup.html.twig', [
             'form' => $form->createView(),
+            'connected' => $connected,
         ]);
     }
 
     #[Route('/view_group', name: "view_group")]
     public function view(Request $request, SessionInterface $session): Response
     {
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
 
         $connected_user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
         $group = $connected_user->getGroup();
@@ -115,7 +142,9 @@ class GroupController extends AbstractController
                     $this->createInvitation($connected_user,$user,$group);
                 }
             }
-            return $this->redirectToRoute('view_group');
+            return $this->redirectToRoute('view_group', [
+                'connected' => $connected,
+            ]);
         }
 
         if ($formAddTask->isSubmitted() && $formAddTask->isValid())
@@ -127,7 +156,9 @@ class GroupController extends AbstractController
             $connected_user->addHabitId($habit->getId());
             $this->dm->persist($connected_user);
             $this->dm->flush();
-            return $this->redirectToRoute('view_group');
+            return $this->redirectToRoute('view_group', [
+                'connected' => $connected,
+            ]);
         }
         
         $this->dm->flush();
@@ -141,11 +172,19 @@ class GroupController extends AbstractController
             'groupHabit' => $groupHabit,
             'connected_user' => $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get("connected_user")]),
             'completed_task' => $this->getCompletedTask($group),
+            'connected' => $connected,
         ]);
     }
     #[Route('/view_group/delete_task/{taskId}', name: 'delete_task', methods: ['POST'])]
     public function deleteTask(Request $request, string $taskId) :Response
-    {
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
         $task = $this->dm->getRepository(Habit::class)->find($taskId);
         $taskCompletions = $this->dm->getRepository(HabitCompletion::class)->findBy(['habit' => $task ? $task : null]);
         if ($task) {
@@ -155,12 +194,21 @@ class GroupController extends AbstractController
             $this->dm->remove($task);
             $this->dm->flush();
         }
-        return $this->redirectToRoute('view_group');
+        return $this->redirectToRoute('view_group', [
+            'connected' => $connected,
+        ]);
     }
 
     #[Route('/view_group/complete_task/{taskId}', name:"complete_task", methods: ['POST'])]
     public function completeTask(Request $request, SessionInterface $session, string $taskId):Response
-    {
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
         $user = $this->dm->getRepository(User::class)->find($session->get('connected_user'));
         $task = $this->dm->getRepository(Habit::class)->find($taskId);
         $group = $this->dm->getRepository(Group::class)->find($task->getGroupId());
@@ -209,7 +257,9 @@ class GroupController extends AbstractController
         
         $this->dm->flush();
 
-        return $this->redirectToRoute('view_group');
+        return $this->redirectToRoute('view_group', [
+            'connected' => $connected,
+        ]);
 
     }
     private function getUserByGroup(?Group $group): array

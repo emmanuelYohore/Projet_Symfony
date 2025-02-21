@@ -20,7 +20,14 @@ class UserController extends AbstractController
 
     #[Route('/user/profile', name: 'user_profile', methods: ['GET'])]
     public function profile(SessionInterface $session): Response
-    {
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
         $userId = $session->get('connected_user');
 
         if (!$userId) {
@@ -32,6 +39,7 @@ class UserController extends AbstractController
 
         return $this->render('user/profile.html.twig', [
             'user' => $user,
+            'connected' => $connected
         ]);
     }
 }
