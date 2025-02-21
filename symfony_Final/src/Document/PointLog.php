@@ -5,13 +5,7 @@ namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 
-<<<<<<< HEAD
 #[ODM\Document(collection: 'points_log')]
-=======
-/**
- * @ODM\Document(repositoryClass=PointsLogRepository::class)
- */
->>>>>>> origin/emmanuel
 class PointLog
 {
     #[ODM\Id(strategy: 'AUTO')]
@@ -29,7 +23,6 @@ class PointLog
     #[ODM\Field(type: 'int')]
     private int $pointsChange;
 
-<<<<<<< HEAD
     #[ODM\Field(type: 'string')]
     private string $reason;
 
@@ -111,10 +104,4 @@ class PointLog
         $this->timestamp = $timestamp;
         return $this;
     }
-=======
-    /**
-     * @ODM\Field(type="date")
-     */
-    private $timestamp;
->>>>>>> origin/emmanuel
 }

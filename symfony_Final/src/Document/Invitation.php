@@ -12,7 +12,6 @@ use MongoDB\BSON\ObjectId;
 class Invitation
 {
     #[ODM\Id(strategy: "AUTO")]
-    #[ODM\Id(strategy: "AUTO")]
     private $id;
 
     #[ODM\ReferenceOne(targetDocument: User::class)]
@@ -24,7 +23,6 @@ class Invitation
     #[ODM\ReferenceOne(targetDocument:Group::class)]
     private ?Group $group = null;
 
-    #[ODM\Field(type: 'string')]
     #[ODM\Field(type: 'string')]
     private $status;
 

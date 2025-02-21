@@ -19,8 +19,9 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use MongoDB\BSON\ObjectId;
 
-class GroupController extends AbstractController
+
 class GroupController extends AbstractController
 {
     private DocumentManager $dm;
@@ -116,6 +117,7 @@ class GroupController extends AbstractController
 
         if ($formAddTask->isSubmitted() && $formAddTask->isValid())
         {
+            $habit->setId($habit->getId());
             $habit->setCreatorId($connected_user->getId());
             $habit->setGroupId($group->getId());
             $this->dm->persist($habit);
@@ -142,7 +144,7 @@ class GroupController extends AbstractController
     public function deleteTask(Request $request, string $taskId) :Response
     {
         $task = $this->dm->getRepository(Habit::class)->find($taskId);
-        $taskCompletions = $this->dm->getRepository(HabitCompletion::class)->findBy(['habit' => $taskId]);
+        $taskCompletions = $this->dm->getRepository(HabitCompletion::class)->findBy(['habit' => $task ? $task : null]);
         if ($task) {
             foreach ($taskCompletions as $habitCompletion) {
                 $this->dm->remove($habitCompletion);
@@ -251,35 +253,15 @@ class GroupController extends AbstractController
         $taskCompleteGroup = [];
         foreach($habitsCompleted as $task)
         {
+            if (!$task->habit){
+                $this->dm->remove($task);
+                continue;
+            }
             if($task->habit->getGroupId() == $group->getId())
             {
                 array_push($taskCompleteGroup, $task->getHabit());
             }
         }
         return $taskCompleteGroup;
-    }
-
-    public function getUserByGroup(?string $groupId): array
-    {
-        $users = $this->dm->getRepository(User::class)->findAll();
-        $groupUser = [];
-        foreach ($users as $user)
-        {
-            if ($user->getGroupId() == $groupId)
-            {
-                array_push($groupUser,$user);
-            }
-        }
-        return $groupUser;
-    }
-
-    public function createInvitation(User $sender,User $receiver,Group $group)
-    {
-        $invitation = new Invitation();
-        $invitation->setGroup($group->getId());
-        $invitation->setSender($sender->getId());
-        $invitation->setReceiver($receiver->getId());
-        $this->dm->persist($invitation);
-        $this->dm->flush();
     }
 }
