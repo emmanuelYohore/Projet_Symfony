@@ -26,6 +26,7 @@ class HabitCompletionCleaner
         $this->logger->info('Début du nettoyage des habit completions.');
 
         $habitCompletions = $this->dm->getRepository(HabitCompletion::class)->findAll();
+        $this->resetCreatedHabitToday();
 
         foreach ($habitCompletions as $habitCompletion) {
             $this->dm->refresh($habitCompletion); 

@@ -5,6 +5,11 @@ namespace App\Controller;
 use App\Document\Habit;
 use App\Document\User;
 use App\Document\Group;
+use App\Document\HabitCompletion;
+use App\Document\PointLog;
+use App\Form\HabitType;
+use App\Form\GroupType;
+use App\Form\UserType;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,90 +30,111 @@ class HomeController extends AbstractController
     public function index(Request $request,SessionInterface $session): Response
     {   
         $userId = $session->get('connected_user');
-        if (!$userId) {
-            return $this->redirectToRoute('app_login');
-        }
+        $connected = false;
 
-        $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
-        if (!$user) {
-            return $this->redirectToRoute('app_logout');
-        }
+        if ($userId) {
+            $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
+            if ($user) {
+                $connected = true;
+                $userHabits = $this->dm->getRepository(Habit::class)->findBy(['user' => $user]);
 
-        $userHabits = $this->dm->getRepository(Habit::class)->findBy(['user' => $user]);
-        $userRepository = $this->dm->getRepository(User::class);
-        $groupRepository = $this->dm->getRepository(Group::class);
-        $habitRepository = $this->dm->getRepository(Habit::class);
-        
-        $users = $userRepository->findAll();
-        $habits = $habitRepository->findAll();
-        $groups = $groupRepository->findAll();
+                $groupHabits = [];
+                $groupRepository = $this->dm->getRepository(Group::class);
+                $groups = $groupRepository->findAll();
 
-        $user = new User();
-        $form = $this->createForm(UserType::class, $user);
-        $form->handleRequest($request);
-
-        
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $profilePicture = $form->get("profile_picture")->getData();
-
-            if ($profilePicture) {
-                $originalFileName = pathinfo($profilePicture->getClientOriginalName(),PATHINFO_FILENAME);
-                $newFileName = $originalFileName . '-' . uniqid() . '.' . $profilePicture->guessExtension();
-                try {
-                    $profilePicture->move(
-                        $this->getParameter('picture_directory'), // Assure-toi d’avoir ce paramètre configuré dans services.yaml
-                        $newFileName
-                    );
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Une erreur est survenue lors de l\'upload de l\'image.');
-                    return $this->redirectToRoute('app_register');
+                $userHabits = [];
+                foreach ($user->getHabitIds() as $habitId) {
+                    $habit = $this->dm->getRepository(Habit::class)->find($habitId);
+                    if ($habit) {
+                        $userHabits[] = $habit;
+                    }
                 }
-                
-                $user->setProfilePicture($newFileName);
+                $user->habits = $userHabits;
+
+                $completedHabits = $this->dm->getRepository(HabitCompletion::class)->findBy(['user' => $user]);
+                $user->completedHabits = array_map(function($completion) {
+                    return [
+                        'habitId' => $completion->getHabit()->getId(),
+                        'isCompleted' => $completion->isCompleted()
+                    ];
+                }, $completedHabits);
+
+                return $this->render('home/index.html.twig', [
+                    'user' => $user,
+                    'userHabits' => $userHabits,
+                    'groupHabits' => $groupHabits,
+                    'groups' => $groups,
+                    'connected' => $connected,
+                ]);
             }
+        } else {
+            $groupRepository = $this->dm->getRepository(Group::class);
+            $userRepository = $this->dm->getRepository(User::class);
+            $habitRepository = $this->dm->getRepository(Habit::class);
             
-            $this->dm->persist($user);
-            $session->set('connected_user',$user->getId());
-            $this->dm->flush();
-            return $this->redirectToRoute('home_index');
-        }
+            $groups = $groupRepository->findAll();
+            $users = $userRepository->findAll();
+            $habits = $habitRepository->findAll();
 
-        foreach ($users as $user) {
+            foreach ($users as $user) {
             $userHabits = [];
-            foreach ($user->getHabitIds() as $habitId) {
-                $habit = $this->dm->getRepository(Habit::class)->find($habitId);
-                if ($habit) {
+                foreach ($user->getHabitIds() as $habitId) {
+                    $habit = $this->dm->getRepository(Habit::class)->find($habitId);
+                    if ($habit) {
                     $userHabits[] = $habit;
+                    }
                 }
-            }
-            $user->habits = $userHabits; 
-    
-            $completedHabits = $this->dm->getRepository(HabitCompletion::class)->findBy(['user' => $user]);
-            $user->completedHabits = array_map(function($completion) {
+                $user->habits = $userHabits; 
+        
+                $completedHabits = $this->dm->getRepository(HabitCompletion::class)->findBy(['user' => $user]);
+                $user->completedHabits = array_map(function($completion) {
                 return [
-                    'habitId' => $completion->getHabit()->getId(),
-                    'isCompleted' => $completion->isCompleted() // Assurez-vous que la méthode isCompleted() existe dans HabitCompletion
-                ];
-            }, $completedHabits);
-            }
+                        'habitId' => $completion->getHabit()->getId(),
+                        'isCompleted' => $completion->isCompleted() // Assurez-vous que la méthode isCompleted() existe dans HabitCompletion
+                    ];
+                }, $completedHabits);
+                }
 
-    return $this->render('habitica/index.html.twig', [
-        'users' => $users,
-        'habits' => $habits,
-        'groups' => $groups,
-        'form' => $form->createView(),
-    ]);
-}
+        return $this->render('home/index.html.twig', [
+            'users' => $users,
+            'habits' => $habits,
+            'userHabits' => $userHabits,
+            'groups' => $groups,
+            'connected' => $connected,
+        ]);
+        }
+    }
 
     #[Route('/habitica-home/delete/{id}', name: 'user_delete', methods: ['POST'])]
     public function deleteUser(Request $request, string $id): Response
     {
+        $user = $this->dm->getRepository(User::class)->find($id);
+        if ($user) {
+            $this->dm->remove($user);
+            $this->dm->flush();
+        }
+
+        return $this->redirectToRoute('home_index');
+    }
+
+    #[Route('/habitica-home/add_habit/{userId}/{groupId}', name: 'add_habit', methods: ['GET', 'POST'])]
+    public function addHabit(Request $request, string $userId, ?string $groupId = null): Response
+    {
+        $user = $this->dm->getRepository(User::class)->find($userId);
+        if (!$user) {
+            throw $this->createNotFoundException('User not found');
+        }
+
+        $habit = new Habit();
+        $form = $this->createForm(HabitType::class, $habit);
+        $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
             $habit->creator_id = $userId;
             $habit->group_id = $groupId;
             $this->dm->persist($habit);
             $user->addHabitId($habit->id);
+            $user->setCreatedHabitToday(true);
             $this->dm->flush();
 
             $habitCompletion = new HabitCompletion();
@@ -130,11 +156,12 @@ class HomeController extends AbstractController
             return $this->redirectToRoute('home_index');
         }
 
-        return $this->render('habitica/add-habit.html.twig', [
+        return $this->render('home/add-habit.html.twig', [
             'form' => $form->createView(),
             'groupId' => $groupId,
         ]);
     }
+
 
     #[Route('/habitica-home/complete-habit/{userId}/{habitId}', name: 'complete_habit', methods: ['POST'])]
     public function completeHabit(Request $request, string $userId, string $habitId): Response
@@ -222,6 +249,7 @@ class HomeController extends AbstractController
             'userHabits' => $userHabits,
             'groupHabits' => $groupHabits
         ]);
+        }
     }
     
 

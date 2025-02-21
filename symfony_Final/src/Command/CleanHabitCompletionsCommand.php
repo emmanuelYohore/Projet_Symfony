@@ -43,7 +43,7 @@ class CleanHabitCompletionsCommand extends Command
 
             $io->success('Checked and cleaned habit completions.');
 
-            sleep(60);
+            sleep(3600);
         }
 
         return Command::SUCCESS;

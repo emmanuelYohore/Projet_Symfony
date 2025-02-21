@@ -23,6 +23,7 @@
         "symfony/framework-bundle": "7.2.*",
         "symfony/messenger": "7.2.*",
         "symfony/mime": "7.2.*",
+        "symfony/monolog-bundle": "*",
         "symfony/process": "7.2.*",
         "symfony/runtime": "7.2.*",
         "symfony/scheduler": "7.2.*",

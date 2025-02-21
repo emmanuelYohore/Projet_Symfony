@@ -55,4 +55,11 @@ class LoginController extends AbstractController
             'error' => $error,
         ]);
     }
+
+    #[Route('/logout', name: 'app_logout')]
+    public function logout(SessionInterface $session): Response
+    {
+        $session->remove('connected_user');
+        return $this->redirectToRoute('home_index');
+    }
 }
