@@ -20,6 +20,9 @@
         <p><strong>Date de création :</strong> {{ user.createdAt|date('d/m/Y H:i') }}</p>
 
         <a href="{{ path('home_index') }}">Retour à l'accueil</a>
+
+        <a href="{{ path('app_logout') }}" class="btn btn-danger">Déconnexion</a>
+    </div>
     </div>
 </body>
 </html>

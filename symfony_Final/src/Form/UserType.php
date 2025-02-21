@@ -35,7 +35,7 @@ class UserType extends AbstractType
                     ]),
                 ],
             ])
-            ->add('save', SubmitType::class, ['label' => 'Create User']);
+            ->add('save', SubmitType::class, ['label' => 'Inscription']);
     }
 
     public function configureOptions(OptionsResolver $resolver)
