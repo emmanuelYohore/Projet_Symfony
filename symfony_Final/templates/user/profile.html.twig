@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Profil de {{ user.username }}</title>
+    <title>Profil of {{ user.username }}</title>
 </head>
 <body>
-    <h1>Profil de {{ user.username }}</h1>
-
     <div>
-        <p><strong>Nom d'utilisateur :</strong> {{ user.username }}</p>
+        <p><strong>Name User :</strong> {{ user.username }}</p>
         <p><strong>Email :</strong> {{ user.email }}</p>
 
         {% if user.profilePicture %}
-            <p><strong>Photo de profil :</strong></p>
+            <p><strong>Profil picture :</strong></p>
             <img src="{{ asset('uploads/' ~ user.profilePicture) }}" alt="Photo de profil" width="150">
         {% else %}
-            <p>Aucune photo de profil disponible.</p>
+            <p>Not Picture</p>
         {% endif %}
 
-        <p><strong>Date de création :</strong> {{ user.createdAt|date('d/m/Y H:i') }}</p>
+        <p><strong>Creation date :</strong> {{ user.createdAt|date('d/m/Y H:i') }}</p>
 
-        <a href="{{ path('home_index') }}">Retour à l'accueil</a>
+        <a href="{{ path('home_index') }}">Back to Home</a>
 
-        <a href="{{ path('app_logout') }}" class="btn btn-danger">Déconnexion</a>
+        <a href="{{ path('app_logout') }}" class="btn btn-danger">Logout</a>
     </div>
 </body>
 </html>

@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 
 
-class DeconnexionController extends AbstractController
+class LogoutController extends AbstractController
 {
     #[Route('/logout', name: 'app_logout', methods: ['GET'])]
     public function logout(SessionInterface $session, Request $request): Response
