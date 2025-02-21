@@ -15,9 +15,15 @@
         <h2>Your Habits</h2>
         {% if userHabits is empty %}
             <p>You still don't have habits.</p>
+            {% if user.group %}
             <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group.id}) }}" method="get">
                 <button type="submit" class="btn">Add habit</button>
             </form>
+            {% else %}
+            <form action="{{ path('add_habit', {'userId': user.id}) }}" method="get">
+                <button type="submit" class="btn">Add habit</button>
+            </form>
+            {% endif %}
         {% else %}
             <ul>
                 {% for habit in user.habits %}
@@ -50,19 +56,23 @@
                 </form>
             {% endif %}
         {% endif %}
-
-        {% if groupHabits is not empty %}
-            <h2>Les habitudes de votre groupe</h2>
-            <ul>
-                {% for habit in groupHabits %}
-                    <li>
-                        <strong>{{ habit.name }}</strong>: {{ habit.description }}
-                        <span style="color: {{ habit.color }};">⬤</span>
-                    </li>
-                {% endfor %}
-            </ul>
+        {% if user.group %}
+            {% if groupHabits is not empty %}
+                <h2>Your group's habits</h2>
+                <ul>
+                    {% for habit in groupHabits %}
+                        <li>
+                            <strong>{{ habit.name }}</strong>: {{ habit.description }}
+                            <span style="color: {{ habit.color }};">⬤</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Your group doesn't have any habits, yet !</p>
+            {% endif %}
         {% else %}
-            <p>Votre groupe n'a pas encore d'habitudes.</p>
+            <p> You don't have a group </p>
+            <a href="{{ path('app_group') }}" class="btn btn-primary">Create a group</a>
         {% endif %}
     {% else %}
         <h1>Welcome to Habitica!</h1>
@@ -74,7 +84,9 @@
                 <img src="{{ asset('uploads/' ~ user.profilePicture) }}" alt="Photo de profil" width="150">
                 <b>Username :</b> {{ user.username }}<br>
                 <b>Points :</b> {{ user.points }}<br>
-                <b>Group: </b> {{ user.group_id }}<br>
+                {% if user.group %}
+                    <b>Group: </b> {{ user.group.id }}<br>
+                {% endif %}
                 <b>Habits:</b><br>
                 {% for habit in user.habits %}
                     <span>{{ habit.name }}</span><br>

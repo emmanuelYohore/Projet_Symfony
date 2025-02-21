@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-declare(strict_types=1);
 
 namespace App\Document;
 
@@ -22,13 +21,13 @@ class Invitation
 
     #[ODM\ReferenceOne(targetDocument:Group::class)]
     private ?Group $group = null;
-
-    #[ODM\Field(type: 'string')]
-    private $status;
+    
+    #[ODM\Field(type: "date")]
+    private ?\DateTime $timestamp = null;
 
     public function __contruct()
     {
-        $this->status = "pending";
+        $this->timestamp = new \DateTime();
     }
 
     public function getId() :?string
@@ -62,14 +61,15 @@ class Invitation
         $this->group = $group;
         return $this;
     }
-    public function getStatus() :?string
+   
+    public function getTimestamp() : \DateTime
     {
-        return $this->status;
+        return $this->timestamp;
     }
 
-    public function setStatus(string $status) : self
+    public function setTimestamp() :self
     {
-        $this->status = $status;
+        $this->timestamp = new \DateTime();
         return $this;
     }
 

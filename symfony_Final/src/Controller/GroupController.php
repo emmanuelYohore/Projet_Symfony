@@ -93,7 +93,10 @@ class GroupController extends AbstractController
 
         $connected_user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
         $group = $connected_user->getGroup();
-
+        if (!$group)
+        {
+            return $this->redirectToRoute('create_group');
+        }
         $formAddUser = $this->createForm(GroupType::class, $group);
         $formAddUser->handleRequest($request);
 
@@ -229,6 +232,7 @@ class GroupController extends AbstractController
         $invitation->setGroup($group);
         $invitation->setSender($sender);
         $invitation->setReceiver($receiver);
+        $invitation->setTimestamp();
         $this->dm->persist($invitation);
         $this->dm->flush();
     }
