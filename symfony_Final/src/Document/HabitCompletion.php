@@ -32,7 +32,7 @@ class HabitCompletion
 
     public function __construct()
     {
-        $this->completed = true;
+        $this->completed = false;
         $this->completedAt = new \DateTime();
     }
 

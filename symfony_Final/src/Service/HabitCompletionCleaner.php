@@ -15,7 +15,7 @@ class HabitCompletionCleaner
     private DocumentManager $dm;
     private LoggerInterface $logger;
 
-    public function __construct(DocumentManager $dm,  LoggerInterface $logger)
+    public function __construct(DocumentManager $dm, LoggerInterface $logger)
     {
         $this->dm = $dm;
         $this->logger = $logger;
@@ -43,7 +43,11 @@ class HabitCompletionCleaner
             $isCompleted = $habitCompletion->isCompleted();
             $now = new \DateTime();
         
-    
+            if ($habitCompletion->getEndDate() === null) {
+                $this->logger->error("End date is null for HabitCompletion with ID: " . $habitCompletion->getId());
+                continue;
+            }
+
             print "Comparing now ({$now->format('Y-m-d H:i:s')}) with endPeriod ({$habitCompletion->getEndDate()->format('Y-m-d H:i:s')})\n";
             if ($now < $habitCompletion->getEndDate()) {
                 print "Habit period not finished yet, skipping.\n";
@@ -59,7 +63,6 @@ class HabitCompletionCleaner
             }
         }
          
-
         $this->dm->flush();
         $this->logger->info('Fin du nettoyage des habit completions.');
     }
@@ -91,7 +94,6 @@ class HabitCompletionCleaner
         $this->dm->refresh($updatedHabitCompletion);
     }
 
-
     private function applyPenalty($habitCompletion, $habit)
     {
         $pointsLog = new PointLog();
@@ -118,7 +120,24 @@ class HabitCompletionCleaner
             $pointsLog->setReason('Missed very hard habit');
         }
 
-        $habitCompletion->getUser()->setPoints($habitCompletion->getUser()->getPoints() + $pointsLog->getPointsChange());
+        if ($habit->getGroupId() !== null) {
+            $group = $this->dm->getRepository(Group::class)->find($habit->getGroupIdAsObjectId());
+            if ($group) {
+                $group->setPoints($group->getPoints() + $pointsLog->getPointsChange());
+                $this->dm->persist($group);
+                if ($group->getPoints() < 0) {
+                    $this->dm->remove($group);
+                    $pointsLog = new PointLog();
+                    $pointsLog->setUser($habitCompletion->getUser());
+                    $pointsLog->setGroup($group);
+                    $pointsLog->setHabit(null);
+                    $pointsLog->setPointsChange(0);
+                    $pointsLog->setReason('Group points below 0, group deleted');   
+                }
+            }
+        } else {
+            $habitCompletion->getUser()->setPoints($habitCompletion->getUser()->getPoints() + $pointsLog->getPointsChange());
+        }
         $habitCompletion->setStartDate(new \DateTime());
         $habitCompletion->setStartDate((new \DateTime())->setTime(4, 0));
 
@@ -139,10 +158,19 @@ class HabitCompletionCleaner
         $users = $userRepo->findAll();
 
         foreach($users as $user){
+            if ($user->getCreatedHabitToday() === false) {
+                continue;
+            }
+            if ($user->getGroup() !== null) {
+                $group = $this->dm->getRepository(Group::class)->find($user->getGroup()->getId());
+                if ($group) {
+                    $group->setCreatedHabitToday(false);
+                    $this->dm->persist($group);
+                }
+            }
             $user->setCreatedHabitToday(false);
             $this->dm->persist($user);
         }
         $this->dm->flush();
     }
-
 }

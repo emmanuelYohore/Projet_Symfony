@@ -9,22 +9,26 @@
             <img src="{{ asset('uploads/' ~ user.profilePicture) }}" alt="Photo de profil" width="150"> 
         {% endif %}
         {{ user.username }}!</h1>
-        <form action="{{ path('app_logout') }}" method="post">
-            <button type="submit" class="btn btn-danger">Logout</button>
-        </form>
+        <span>Points: {{ user.points }}</span><br>
         <h2>Your Habits</h2>
         {% if userHabits is empty %}
             <p>You still don't have habits.</p>
-            <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group.id}) }}" method="get">
-                <button type="submit" class="btn">Add habit</button>
-            </form>
+            {% if user and user.group %}
+                <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group.id}) }}" method="get">
+                    <button type="submit" class="btn">Add habit</button>
+                </form>
+            {% else %}
+                <form action="{{ path('add_habit', {'userId': user.id}) }}" method="get">
+                    <button type="submit" class="btn">Add habit</button>
+                </form>
+            {% endif %}
         {% else %}
             <ul>
                 {% for habit in user.habits %}
-                    <h2>{{ habit.name }}</h2><br>
-                    <span>Description: {{ habit.description }}</span><br>
+                    <strong>{{ habit.name }}</strong>: {{ habit.description }}
+                    <span style="color: {{ habit.color }};">⬤</span><br>
                     <span>Difficulty: {{ habit.difficulty }}</span><br>
-                    <span>Periodicity: {{ habit.periodicity }}</span><br>
+                    <span>Periodicity: {{ habit.periodicity }}</span>
                     <form action="{{ path('complete_habit', {'userId': user.id, 'habitId': habit.id}) }}" method="post">
                         <input type="hidden" name="completed" value="0">
                         <input type="checkbox" name="completed" value="1" 
@@ -45,38 +49,65 @@
             {% if user.createdHabitToday %}
                 <p>You have already created a habit today.</p>
             {% else %}
-                <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group.id}) }}" method="get">
+                <form action="{{ path('add_habit', {'userId': user.id, 'groupId': null}) }}" method="get">
                     <button type="submit" class="btn">Add habit</button>
                 </form>
             {% endif %}
         {% endif %}
 
-        {% if user.group_id %}
-            <h2>Your Group</h2>
+        {% if user.group %}
+            <h2><a href ="/group" method="get">Your Group</a></h2>
+            <p>Group name: {{ user.group.name }}</p>
+            <p>Group creator: {{ user.group.creator.username }}</p>
+            <p>Group points: {{ user.group.points }}</p>
             {% if groupHabits is not empty %}
                 <h2>Les habitudes de votre groupe</h2>
                 <ul>
                     {% for habit in groupHabits %}
                         <li>
                             <strong>{{ habit.name }}</strong>: {{ habit.description }}
-                            <span style="color: {{ habit.color }};">⬤</span>
+                            <span style="color: {{ habit.color }};">⬤</span><br>
+                            <span>Difficulty: {{ habit.difficulty }}</span><br>
+                            <span>Periodicity: {{ habit.periodicity }}</span>
+                            <form action="{{ path('complete_habit', {'userId': user.id, 'habitId': habit.id}) }}" method="post">
+                                <input type="hidden" name="completed" value="0">
+                                <input type="checkbox" name="completed" value="1" 
+                                    {% for completedHabit in user.completedHabits %}
+                                        {% if completedHabit.habitId == habit.id and completedHabit.isCompleted %}
+                                            checked
+                                        {% endif %}
+                                    {% endfor %}
+                                    onchange="this.form.submit()">
+                                <br>
+                            </form>
                         </li>
                     {% endfor %}
                 </ul>
+                {% if user.id == user.group.creator.id and user.group.createdHabitToday == false %}
+                    <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group.id}) }}" method="get">
+                        <button type="submit" class="btn">Add habit</button>
+                    </form>
+                {% elseif user.id == user.group.creator.id and user.group.createdHabitToday == true %}
+                    <p>Vous avez déjà créé une habitude aujourd'hui.</p>
+                {% endif %}
             {% else %}
                 <p>Votre groupe n'a pas encore d'habitudes.</p>
-                <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group_id}) }}" method="get">
-                    <button type="submit" class="btn">Add habit</button>
-                </form>
+                {% if user.id == user.group.creator.id %}
+                    <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group.id}) }}" method="get">
+                        <button type="submit" class="btn">Add habit</button>
+                    </form>
+                {% endif %}
             {% endif %}
         {% else %}
             <form action="{{ path('create_group', {'userId': user.id}) }}" method="get">
                 <button type="submit" class="btn">Create a group</button>
             </form>
         {% endif %}
+
+
+
     {% else %}
         <h1>Welcome to Habitica!</h1>
-        <a href="{{ path('app_login') }}" class="btn btn-primary">Login</a>
 
         <h2>Existing users</h2>
         {% for user in users %}
@@ -84,7 +115,11 @@
                 <img src="{{ asset('uploads/' ~ user.profilePicture) }}" alt="Photo de profil" width="150">
                 <b>Username :</b> {{ user.username }}<br>
                 <b>Points :</b> {{ user.points }}<br>
-                <b>Group: </b> {{ user.group_id }}<br>
+                {% if user.group %}
+                    <b>Group :</b> {{ user.group.name }}<br>
+                {% else %}
+                    <b> No group</b><br>
+                {% endif %}
                 <b>Habits:</b><br>
                 {% for habit in user.habits %}
                     <span>{{ habit.name }}</span><br>
