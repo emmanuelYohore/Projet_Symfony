@@ -1,36 +1,40 @@
 <?php
-declare(strict_types=1);
+
 namespace App\Controller;
-use App\Document\Group;
-use App\Document\Invitation;
-use App\Document\User;
-use App\Document\UserHabit;
-use App\Document\PointLog;
+
 use App\Document\Habit;
-use App\Document\HabitCompletion;
-use App\Form\UserType;
-use App\Form\HabitType;
+use App\Document\User;
+use App\Document\Group;
 use Doctrine\ODM\MongoDB\DocumentManager;
-use MongoDB\BSON\Regex;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
-class HomeController extends AbstractController {
+class HomeController extends AbstractController
+{
     private DocumentManager $dm;
-    private LoggerInterface $logger;
-    public function __construct(DocumentManager $dm, LoggerInterface $logger)
+
+    public function __construct(DocumentManager $dm)
     {
         $this->dm = $dm;
-        $this->logger = $logger;
     }
 
-    #[Route('/habitica-home', name: 'home_index', methods: ['GET', 'POST'])]
+    #[Route('/home', name: 'home_index', methods: ['GET', 'POST'])]
     public function index(Request $request,SessionInterface $session): Response
     {   
+        $userId = $session->get('connected_user');
+        if (!$userId) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
+        if (!$user) {
+            return $this->redirectToRoute('app_logout');
+        }
+
+        $userHabits = $this->dm->getRepository(Habit::class)->findBy(['user' => $user]);
         $userRepository = $this->dm->getRepository(User::class);
         $groupRepository = $this->dm->getRepository(Group::class);
         $habitRepository = $this->dm->getRepository(Habit::class);
@@ -39,7 +43,6 @@ class HomeController extends AbstractController {
         $habits = $habitRepository->findAll();
         $groups = $groupRepository->findAll();
 
-        $id = $session->get('connected_user');
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
@@ -101,27 +104,6 @@ class HomeController extends AbstractController {
     #[Route('/habitica-home/delete/{id}', name: 'user_delete', methods: ['POST'])]
     public function deleteUser(Request $request, string $id): Response
     {
-        $user = $this->dm->getRepository(User::class)->find($id);
-        if ($user) {
-            $this->dm->remove($user);
-            $this->dm->flush();
-        }
-
-        return $this->redirectToRoute('home_index');
-    }
-
-    #[Route('/habitica-home/add_habit/{userId}/{groupId}', name: 'add_habit', methods: ['GET', 'POST'])]
-    public function addHabit(Request $request, string $userId, ?string $groupId = null): Response
-    {
-        $user = $this->dm->getRepository(User::class)->find($userId);
-        if (!$user) {
-            throw $this->createNotFoundException('User not found');
-        }
-
-        $habit = new Habit();
-        $form = $this->createForm(HabitType::class, $habit);
-        $form->handleRequest($request);
-
         if ($form->isSubmitted() && $form->isValid()) {
             $habit->creator_id = $userId;
             $habit->group_id = $groupId;
@@ -234,13 +216,14 @@ class HomeController extends AbstractController {
                     }
                 }
             }
-        }
-        
 
-        $this->dm->flush();
-
-        return $this->redirectToRoute('home_index');
+        return $this->render('home/index.html.twig', [
+            'user' => $user,
+            'userHabits' => $userHabits,
+            'groupHabits' => $groupHabits
+        ]);
     }
+    
 
     #[Route('/habitica-home/delete_habit/{habitId}', name: 'delete_habit', methods: ['POST'])]
     public function deleteHabit(Request $request, string $habitId): Response

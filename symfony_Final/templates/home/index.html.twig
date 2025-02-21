@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Home{% endblock %}
+
+{% block body %}
+    <h1>Bienvenue, {{ user.username }} !</h1>
+
+    <h2>Vos habitudes</h2>
+    {% if userHabits is empty %}
+        <p>Vous n'avez pas encore d'habitudes.</p>
+    {% else %}
+        <ul>
+            {% for habit in userHabits %}
+                <li>
+                    <strong>{{ habit.name }}</strong>: {{ habit.description }}
+                    <span style="color: {{ habit.color }};">⬤</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if groupHabits is not empty %}
+        <h2>Les habitudes de votre groupe</h2>
+        <ul>
+            {% for habit in groupHabits %}
+                <li>
+                    <strong>{{ habit.name }}</strong>: {{ habit.description }}
+                    <span style="color: {{ habit.color }};">⬤</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Votre groupe n'a pas encore d'habitudes.</p>
+    {% endif %}
+{% endblock %}

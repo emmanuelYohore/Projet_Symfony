@@ -25,7 +25,16 @@ class HabitType extends AbstractType
                     'Hard' => 3,
                 ],
             ])
-            ->add('color', TextType::class)
+            ->add('color', ChoiceType::class, [
+                'choices' => [
+                    'Blue' => "#0000FF",
+                    'Red' => "#FF0000",
+                    'Green' => "#00FF00",
+                    "Magenta" => "#FF00FF",
+                    "Cyan" => "#00FFFF",
+                    "Yellow" => "#FFFF00",
+                ]
+            ])
             ->add('periodicity', ChoiceType::class, [
                 'choices' => [
                     'Daily' => 'daily',

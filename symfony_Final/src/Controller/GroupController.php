@@ -143,4 +143,28 @@ class GroupController extends AbstractController
         $this->dm->persist($invitation);
         $this->dm->flush();
     }
+
+    public function getUserByGroup(?string $groupId): array
+    {
+        $users = $this->dm->getRepository(User::class)->findAll();
+        $groupUser = [];
+        foreach ($users as $user)
+        {
+            if ($user->getGroupId() == $groupId)
+            {
+                array_push($groupUser,$user);
+            }
+        }
+        return $groupUser;
+    }
+
+    public function createInvitation(User $sender,User $receiver,Group $group)
+    {
+        $invitation = new Invitation();
+        $invitation->setGroup($group->getId());
+        $invitation->setSender($sender->getId());
+        $invitation->setReceiver($receiver->getId());
+        $this->dm->persist($invitation);
+        $this->dm->flush();
+    }
 }
