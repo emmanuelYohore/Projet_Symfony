@@ -33,7 +33,7 @@
         "symfony/twig-bundle": "7.2.*",
         "symfony/validator": "7.2.*",
         "symfony/yaml": "7.2.*",
-        "zenstruck/schedule-bundle": "*"
+        "zenstruck/schedule-bundle": "^1.8"
     },
     "require-dev": {
         "symfony/maker-bundle": "^1.62.1",
