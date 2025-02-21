@@ -1,22 +1,63 @@
 {% extends 'base.html.twig' %}
 
-{% block title %} Add Habit {% endblock %}
+{% block title %} Accueil {% endblock %}
 
 {% block body %}
     <h1>Welcome to Habitica!</h1>
-    <h2>Add a new habit</h2>
-    <p>
-        <a href="{{ path('app_login') }}">Connexion</a>
-    </p>
-    {{ form_start(form) }}
-        {{ form_row(form.name) }}
-        {{ form_row(form.description) }}
-        {{ form_row(form.difficulty) }}
-        {{ form_row(form.color) }}
-        {{ form_row(form.periodicity) }}
-        {{ form_row(form.save) }}
-    {{ form_end(form) }}
+
+    <div>
+        <h3>Your Tasks</h3>
+        <ul>
+            {% for task in tasks %}
+                <li>{{ task.name }} - {{ task.description }}</li>
+            {% endfor %}
+        </ul>
+        <button id="create-task-btn">Create Task</button>
+    </div>
+
+    <div>
+        <h3>Your Groups</h3>
+        <ul>
+            {% for group in groups %}
+                <li>{{ group.name }} - {{ group.description }}</li>
+            {% endfor %}
+        </ul>
+        <button id="create-group-btn">Create Group</button>
+    </div>
+
+    <!-- Pop-up for creating a task -->
+    <div id="task-popup" style="display:none;">
+        {{ form_start(taskForm) }}
+            {{ form_row(taskForm.name) }}
+            {{ form_row(taskForm.description) }}
+            {{ form_row(taskForm.difficulty) }}
+            {{ form_row(taskForm.save) }}
+        {{ form_end(taskForm) }}
+        <button onclick="closePopup('task-popup')">Close</button>
+    </div>
+
+    <!-- Pop-up for creating a group -->
+    <div id="group-popup" style="display:none;">
+        {{ form_start(groupForm) }}
+            {{ form_row(groupForm.name) }}
+            {{ form_row(groupForm.description) }}
+            {{ form_row(groupForm.save) }}
+        {{ form_end(groupForm) }}
+        <button onclick="closePopup('group-popup')">Close</button>
+    </div>
+
+    <script>
+        document.getElementById("create-task-btn").addEventListener("click", function() {
+            document.getElementById("task-popup").style.display = "block";
+        });
+
+        document.getElementById("create-group-btn").addEventListener("click", function() {
+            document.getElementById("group-popup").style.display = "block";
+        });
+
+        function closePopup(popupId) {
+            document.getElementById(popupId).style.display = "none";
+        }
+    </script>
+
 {% endblock %}
-{{ form_end(form) }}
-    <h3>Connected User</h2>
-    {% if user.username %}

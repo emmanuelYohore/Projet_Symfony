@@ -69,6 +69,8 @@ class HomeController extends AbstractController {
             'users' => $users,
             'form' => $form->createView(),
             'user' => $session->get('connected_user') ? $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]) : null,
+            
+        
         ]);
 
 

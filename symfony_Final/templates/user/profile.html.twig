@@ -1,25 +1,33 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Profil de {{ user.username }}</title>
-</head>
-<body>
-    <h1>Profil de {{ user.username }}</h1>
+{% extends 'base.html.twig' %}
 
-    <div>
-        <p><strong>Nom d'utilisateur :</strong> {{ user.username }}</p>
-        <p><strong>Email :</strong> {{ user.email }}</p>
+{% block title %}Profil de {{ user.username }}{% endblock %}
 
-        {% if user.profilePicture %}
-            <p><strong>Photo de profil :</strong></p>
-            <img src="{{ asset('uploads/' ~ user.profilePicture) }}" alt="Photo de profil" width="150">
-        {% else %}
-            <p>Aucune photo de profil disponible.</p>
-        {% endif %}
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="mb-4 text-center">Profil de {{ user.username }}</h1>
 
-        <p><strong>Date de création :</strong> {{ user.createdAt|date('d/m/Y H:i') }}</p>
+                    <div>
+                        <p><strong>Nom d'utilisateur :</strong> {{ user.username }}</p>
+                        <p><strong>Email :</strong> {{ user.email }}</p>
 
-        <a href="{{ path('home_index') }}">Retour à l'accueil</a>
+                        {% if user.profilePicture %}
+                            <p><strong>Photo de profil :</strong></p>
+                            <img src="{{ asset('uploads/' ~ user.profilePicture) }}" alt="Photo de profil" class="img-fluid" style="max-width: 150px;">
+                        {% else %}
+                            <p>Aucune photo de profil disponible.</p>
+                        {% endif %}
+
+                        <p><strong>Date de création :</strong> {{ user.createdAt|date('d/m/Y H:i') }}</p>
+
+                        <a href="{{ path('home_index') }}" class="btn btn-primary">Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
