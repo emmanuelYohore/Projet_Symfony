@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} Accueil {% endblock %}
+
+{% block body %}
+    <h1>Welcome to Habitica!</h1>
+    <h2>Add a new habit</h2>
+    {{ form_start(form) }}
+        {{ form_row(form.name) }}
+        {{ form_row(form.description) }}
+        {{ form_row(form.difficulty) }}
+        {{ form_row(form.color) }}
+        {{ form_row(form.periodicity) }}
+        {{ form_row(form.save) }}
+    {{ form_end(form) }}
+{% endblock %}

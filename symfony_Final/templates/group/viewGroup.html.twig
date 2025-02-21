@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello GroupController!{% endblock %}
+
+{% block body %}
+<style>
+    .hidden-field {
+        display: none;
+    }
+</style>
+<div class="example-wrapper">
+
+    Add people to the group :
+    {{group.name}}
+    {{form_start(formAddUser)}}
+        <div class="hidden-field">
+            {{ form_row(formAddUser.name) }} 
+        </div>
+        {{form_row(formAddUser.emails)}}
+        {{form_row(formAddUser.save)}}
+    {{ form_end(formAddUser) }}
+    <br>
+    <br>
+    {{form_start(formAddTask)}}
+        {{form_row(formAddTask.name)}}
+        {{form_row(formAddTask.description)}}
+        {{form_row(formAddTask.difficulty)}}
+        {{form_row(formAddTask.color)}}
+        {{form_row(formAddTask.periodicity)}}
+        {{form_row(formAddTask.save)}}
+    {{form_end(formAddTask)}}
+    <h2>User in the group</h2>
+    {% for user in groupUser %}
+        <p>
+            <b> Username :</b> {{user.username}}<br>
+        </p>
+    {% endfor %}
+    <h2>Task in the group</h2>
+    {% for task in groupHabit %}
+        <p style="color : {{ task.color }};">
+            <b>Task : </b> {{task.description}}<br>
+        </p>
+        {% if task in completed_task %}
+            <b style='color : {{task.color }};'>Task Completed !</b>
+        {% else %}
+            <form action="{{ path('complete_task', {'taskId': task.id}) }}" method="post">
+                <button class="btn">Complete Task</button>    
+            </form>
+        {% endif %}
+        {% if group.creator.id == connected_user.id %}
+            <form method="post" action="{{path('delete_task', {'taskId': task.id})}}" method="get">
+                <button class="btn">Delete Task</button>
+            </form>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

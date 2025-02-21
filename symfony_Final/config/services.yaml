@@ -6,13 +6,15 @@
 parameters:
     env(MONGODB_URL): ''
     env(MONGODB_DB): ''
-    picture_directory: '%kernel.project_dir%/public/uploads'
+    picture_directory: "%kernel.project_dir%/public/uploads"
 
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $cache: '@scheduler.cache'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -31,4 +33,17 @@ services:
         arguments:
             - App\Document\UserHabit
         tags: ['doctrine_mongodb.odm.repository_service']
+    
+    App\Service\HabitCompletionCleaner:
+        arguments:
+            $dm: '@doctrine_mongodb.odm.document_manager'
+
+    App\Command\CleanHabitCompletionsCommand:
+        tags: ['console.command']
+            
+        arguments:
+            $cleaner: '@App\Service\HabitCompletionCleaner'
+            $logger: '@logger'
+
+    
         
