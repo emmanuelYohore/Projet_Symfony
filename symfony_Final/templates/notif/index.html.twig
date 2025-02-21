@@ -10,12 +10,25 @@
 
 <div class="example-wrapper">
     <h1>Hello {{ controller_name }}! ✅</h1>
-    {% for log in logs %}
-        <p>{{log.timestamp|date('Y-m-d h:i:s')}}
-    {% endfor %}
-    {% for invit in invitations %}
-        <p>Sender : </p>{{invit.sender.username}}
-        <p>Receiver : </p>{{invit.receiver.username}}
+    {% for notif in allNotifs %}
+        {% if notif in invitations %}
+*           <p>You've been invited to join the group : {{notif.group.name}}</p>
+            <form action="{{path('accept_invit', {'groupId' : notif.group.id, 'invitId' : notif.id})}}" method="post">
+                <button class="btn">Accept</button>
+            </form>
+            <form action="{{path('decline_invit', {'groupId' : notif.group.id, 'invitId' : notif.id})}}" method="post">
+                <button class="btn">Decline</button>
+            </form>
+        {% else %}
+            <b>{{notif.reason}}</b>
+            {% if notif.pointschange > 0 %}
+            <b>You gained {{notif.pointschange}} points !</b>
+            {% elseif notif.pointschange < 0 %}
+            <b>You lost {{notif.pointschange}} points.</b>
+            {% endif %}
+
+        {% endif %}
+        <p>date : {{notif.timestamp|date('d-m-Y H:i:s')}}</p>
     {% endfor %}
 </div>
 {% endblock %}

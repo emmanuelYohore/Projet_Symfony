@@ -13,15 +13,9 @@
         <h2>Your Habits</h2>
         {% if userHabits is empty %}
             <p>You still don't have habits.</p>
-            {% if user and user.group %}
-                <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group.id}) }}" method="get">
+            <form action="{{ path('add_habit', {'userId': user.id}) }}" method="get">
                     <button type="submit" class="btn">Add habit</button>
                 </form>
-            {% else %}
-                <form action="{{ path('add_habit', {'userId': user.id}) }}" method="get">
-                    <button type="submit" class="btn">Add habit</button>
-                </form>
-            {% endif %}
         {% else %}
             <ul>
                 {% for habit in user.habits %}
