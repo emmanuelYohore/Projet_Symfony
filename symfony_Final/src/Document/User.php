@@ -48,6 +48,9 @@ class User
     #[ODM\Field(type: "collection")]
     public array $habit_ids = [];
 
+    #[ODM\Field(type: "bool")]
+    private bool $created_habit_today = false;
+
     public function __construct()
     {
         $this->created_at = new \DateTime();
@@ -193,6 +196,15 @@ class User
         return $this;
     }
 
+    public function removeHabitId(string $habitId): self
+    {
+        $key = array_search($habitId, $this->habit_ids);
+        if ($key !== false) {
+            unset($this->habit_ids[$key]);
+        }
+        return $this;
+    }
+
     // Méthodes pour convertir entre ObjectId et string si nécessaire
     public function getGroupIdAsObjectId(): ?ObjectId
     {
@@ -202,6 +214,18 @@ class User
     public function setGroupIdFromObjectId(?ObjectId $group): self
     {
         $this->group = $group ? (string) $group : null;
+
+        return $this;
+    }
+
+    public function getCreatedHabitToday(): bool
+    {
+        return $this->created_habit_today;
+    }
+
+    public function setCreatedHabitToday(bool $created_habit_today): self
+    {
+        $this->created_habit_today = $created_habit_today;
 
         return $this;
     }

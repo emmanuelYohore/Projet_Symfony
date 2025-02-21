@@ -18,11 +18,17 @@ class HabitCompletion
     #[ODM\ReferenceOne(targetDocument: Habit::class)]
     public ?Habit $habit = null;
 
-    #[ODM\Field(type: 'bool', nullable: true)]
-    public ?bool $completed = null;
-    
+    #[ODM\Field(type: 'bool')]
+    public bool $completed = false;
+
     #[ODM\Field(type: 'date')]
-    public ?\DateTime $completedAt = null;
+    public ?\DateTime $completed_at = null ; 
+
+    #[ODM\Field(type: 'date')]
+    public ?\DateTime $start_date = null ; 
+
+    #[ODM\Field(type: 'date')]
+    public ?\DateTime $end_date = null ; 
 
     public function __construct()
     {
@@ -36,7 +42,7 @@ class HabitCompletion
         return $this->id;
     }
 
-    public function getUser(): User
+    public function getUser(): ?User
     {
         return $this->user;
     }
@@ -60,26 +66,50 @@ class HabitCompletion
         return $this;
     }
 
-    public function getCompleted():bool
+    public function isCompleted(): bool
     {
         return $this->completed;
     }
 
-    public function setCompleted(bool $comp) :self
+    public function setCompleted(bool $completed): self
     {
-        $this->completed = $comp;
+        $this->completed = $completed;
+
         return $this;
     }
 
-
-    public function getCompletedAt(): \DateTime
+    public function getCompletedAt(): ?\DateTime
     {
-        return $this->completedAt;
+        return $this->completed_at;
     }
 
-    public function setCompletedAt(\DateTime $completedAt): self
+    public function setCompletedAt(?\DateTime $completed_at): self
     {
-        $this->completedAt = $completedAt;
+        $this->completed_at = $completed_at;
+
+        return $this;
+    }
+
+    public function getStartDate(): ?\DateTime
+    {
+        return $this->start_date;
+    }
+
+    public function setStartDate(?\DateTime $start_date): self
+    {
+        $this->start_date = $start_date;
+
+        return $this;
+    }
+
+    public function getEndDate(): ?\DateTime
+    {
+        return $this->end_date;
+    }
+
+    public function setEndDate(?\DateTime $end_date): self
+    {
+        $this->end_date = $end_date;
 
         return $this;
     }
