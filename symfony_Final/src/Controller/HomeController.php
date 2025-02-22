@@ -7,6 +7,7 @@ use App\Document\User;
 use App\Document\Group;
 use App\Document\HabitCompletion;
 use App\Document\PointLog;
+use App\Document\Invitation;
 use App\Form\HabitType;
 use App\Form\GroupType;
 use App\Form\UserType;
@@ -77,6 +78,9 @@ class HomeController extends AbstractController
                     'groupHabits' => $groupHabits,
                     'groups' => $groups,
                     'connected' => $connected,
+                    'logs' => $this->getPointsLogByUser($user->getId(),$user->getGroup() ? $user->getGroup()->getId() : null),
+                    'invit' => $this->getInvitationByUser($user->getId()),
+                    'notifs' => $this->getOrderedNotifs($userId->getId(),$user->getGroup() ? $user->getGroup()->getId() : null),
                 ]);
             }
         } else {
@@ -113,6 +117,9 @@ class HomeController extends AbstractController
             'userHabits' => $userHabits,
             'groups' => $groups,
             'connected' => $connected,
+            'logs' => [],
+            'invit' => [],
+            'notifs' => [],
         ]);
         }
     }
@@ -360,5 +367,51 @@ class HomeController extends AbstractController
         return $this->redirectToRoute('home_index', [
             'connected' => $connected,
         ]);
+    }
+
+    private function getOrderedNotifs(?string $userId, ?string $groupId):array 
+    {
+        if (!$userId) {
+            return [];
+        }
+        $allNotifs = array_merge($this->getPointsLogByUser($userId,$groupId),$this->getInvitationByUser($userId));
+        usort($allNotifs, function ($a, $b) {
+            return $b->getTimestamp() <=> $a->getTimestamp();
+        });
+        return $allNotifs;
+    }
+
+    private function getPointsLogByUser(?string $userId, ?string $groupId) : array
+    {
+        if (!$userId) {
+            return [];
+        }
+        $allPointsLog = $this->dm->getRepository(PointLog::class)->findAll();
+        $pointsLogs = [];
+        foreach($allPointsLog as $log)
+        {
+            if ($log->getUser()->getId() == $userId || $log->getGroup() ? $log->getGroup()->getId() == $groupId : false)
+            {
+                array_push($pointsLogs,$log);
+            }
+        }
+        return $pointsLogs;
+    }
+
+    private function getInvitationByUser(?string $userId):array
+    {
+        if (!$userId) {
+            return [];
+        }
+        $allInvitations = $this->dm->getRepository(Invitation::class)->findAll();
+        $invitations = [];
+        foreach($allInvitations as $invit)
+        {
+            if ($invit->getReceiver()->getId() == $userId){
+                array_push($invitations,$invit);
+            }
+                
+        }
+        return $invitations;
     }
 }
