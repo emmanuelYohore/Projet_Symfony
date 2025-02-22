@@ -210,8 +210,8 @@ class HomeController extends AbstractController
     }
 
 
-    #[Route('/habitica-home/complete-habit/{userId}/{habitId}', name: 'complete_habit', methods: ['POST'])]
-    public function completeHabit(Request $request, string $userId, string $habitId ,SessionInterface $session): Response
+    #[Route('/habitica-home/complete-habit/{userId}/{habitId}/{in_group?}', name: 'complete_habit', methods: ['POST'])]
+    public function completeHabit(Request $request, string $userId, string $habitId, ?bool $in_group ,SessionInterface $session): Response
     {   
         $userId = $session->get('connected_user');
         $connected = false;
@@ -325,9 +325,17 @@ class HomeController extends AbstractController
 
         $this->dm->flush();
 
-        return $this->redirectToRoute('home_index', [
-            'connected' => $connected,
-        ]);
+        if ($in_group == true) {
+            return $this->redirectToRoute('view_group', [
+                'connected' => $connected,
+            ]);
+        } else {
+            return $this->redirectToRoute('home_index', [
+                'connected' => $connected,
+            ]);
+        }
+
+        
     }
 
     

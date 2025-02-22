@@ -166,13 +166,21 @@ class GroupController extends AbstractController
         $this->dm->flush();
         $groupUser = $this->getUserByGroup($group);
         $groupHabit = $this->getHabitsGroup($group);
+        $connected_user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
+        $completedHabits = $this->dm->getRepository(HabitCompletion::class)->findBy(['user' => $connected_user]);
+        $connected_user->completedHabits = array_map(function($completion) {
+            return [
+                'habitId' => $completion->getHabit()->getId(),
+                'isCompleted' => $completion->isCompleted()
+            ];
+        }, $completedHabits);
         return $this->render('group/viewGroup.html.twig', [
             'formAddUser' => $formAddUser->createView(),
             'formAddTask' => $formAddTask->createView(),
             'group' => $group,
             'groupUser' => $groupUser,
             'groupHabit' => $groupHabit,
-            'connected_user' => $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get("connected_user")]),
+            'connected_user' => $connected_user,
             'completed_task' => $this->getCompletedTask($group),
             'connected' => $connected,
             'logs' => [],

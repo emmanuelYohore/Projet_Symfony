@@ -45,5 +45,8 @@ services:
             $cleaner: '@App\Service\HabitCompletionCleaner'
             $logger: '@logger'
 
+    App\Twig\AppExtension:
+        tags: ['twig.extension']
+
     
         
