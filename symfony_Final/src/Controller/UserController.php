@@ -3,6 +3,9 @@
 namespace App\Controller;
 
 use App\Document\User;
+use App\Document\PointLog;
+use App\Document\Invitation;
+use App\Controller\HomeController;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +26,12 @@ class UserController extends AbstractController
     {   
         $userId = $session->get('connected_user');
         $connected = false;
-
+        $control = new HomeController($this->dm);
+        $control->getNewNotifs($this->dm->getRepository(User::class)->find($userId),$session);
+        $logs = $this->dm->getRepository(PointLog::class)->findBy(['id' => ['$in' => $session->get('logs') ? $session->get('logs') : []]]);
+        $invits = $this->dm->getRepository(Invitation::class)->findBy(['id' => ['$in' => $session->get('invit')? $session->get('invit') : []]]);
+        $notifs = $control->getOrderedNotifs($logs,$invits,$this->dm->getRepository(User::class)->find($userId),$session);
+       
         if ($userId) {
             $connected = true;
         }
@@ -39,7 +47,10 @@ class UserController extends AbstractController
 
         return $this->render('user/profile.html.twig', [
             'user' => $user,
-            'connected' => $connected
+            'connected' => $connected,
+            'logs' => $logs,
+            'invitations' => $invits,
+            'allNotifs' => $notifs,
         ]);
     }
 }

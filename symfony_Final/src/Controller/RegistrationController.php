@@ -48,6 +48,7 @@ class RegistrationController extends AbstractController
                 }
 
                 $user->setProfilePicture($newFilename);
+                
             }
             else
             {
@@ -57,7 +58,7 @@ class RegistrationController extends AbstractController
 
             $user->setPassword(password_hash($user->getPassword(), PASSWORD_BCRYPT));
 
-            
+            $session->set('connected_user',$user->getId());
             $this->dm->persist($user);
             $this->dm->flush(); 
 

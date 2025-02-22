@@ -30,10 +30,11 @@ class LoginController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $username = $data['identifier'];
+            $identifier = $data['identifier'];
             $password = $data['password'];
 
-            $user = $this->dm->getRepository(User::class)->findOneBy(['username' => $username]);
+            if (str_contains($identifier,'@')) { $user = $this->dm->getRepository(User::class)->findOneBy(['email' => $identifier]); }
+            else {$user = $this->dm->getRepository(User::class)->findOneBy(['username' => $identifier]);}
 
             if ($user && password_verify($password, $user->getPassword())) {
                 $session->set('connected_user', $user->getId());
@@ -52,6 +53,8 @@ class LoginController extends AbstractController
     #[Route('/logout', name: 'app_logout')]
     public function logout(SessionInterface $session): Response
     {
+        $session->remove('logs');
+        $session->remove('invit');
         $session->remove('connected_user');
         return $this->redirectToRoute('home_index');
     }
