@@ -114,7 +114,7 @@ final class NotifController extends AbstractController
         $this->dm->persist($pointLog);
         $this->dm->persist($user);
         $this->dm->flush();
-        return $this->redirectToRoute('app_notif', [
+        return $this->redirectToRoute('home_index', [
             'connected' => $connected
         ]);
     }
@@ -141,7 +141,7 @@ final class NotifController extends AbstractController
         $this->removeInvitation($invitId);
         $this->dm->remove($invit);
         $this->dm->flush();
-        return $this->redirectToRoute('app_notif', [
+        return $this->redirectToRoute('home_index', [
             'connected' => $connected
         ]);
     }

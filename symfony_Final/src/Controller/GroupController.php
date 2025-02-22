@@ -173,10 +173,11 @@ class GroupController extends AbstractController
             'connected_user' => $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get("connected_user")]),
             'completed_task' => $this->getCompletedTask($group),
             'connected' => $connected,
+            'allNotifs' => [],
         ]);
     }
     #[Route('/view_group/delete_task/{taskId}', name: 'delete_task', methods: ['POST'])]
-    public function deleteTask(Request $request, string $taskId) :Response
+    public function deleteTask(Request $request,SessionInterface $session, string $taskId) :Response
     {   
         $userId = $session->get('connected_user');
         $connected = false;

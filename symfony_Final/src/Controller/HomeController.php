@@ -79,8 +79,8 @@ class HomeController extends AbstractController
                     'groups' => $groups,
                     'connected' => $connected,
                     'logs' => $this->getPointsLogByUser($user->getId(),$user->getGroup() ? $user->getGroup()->getId() : null),
-                    'invit' => $this->getInvitationByUser($user->getId()),
-                    'notifs' => $this->getOrderedNotifs($userId->getId(),$user->getGroup() ? $user->getGroup()->getId() : null),
+                    'invitations' => $this->getInvitationByUser($userId),
+                    'allNotifs' => $this->getOrderedNotifs($userId,$user->getGroup() ? $user->getGroup()->getId() : null),
                 ]);
             }
         } else {
