@@ -36,7 +36,7 @@
         "zenstruck/schedule-bundle": "^1.8"
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.62.1",
+        "symfony/maker-bundle": "^1.62",
         "symfony/stopwatch": "7.2.*",
         "symfony/twig-bundle": "7.2.*",
         "symfony/web-profiler-bundle": "7.2.*"

@@ -7,6 +7,7 @@ use App\Document\User;
 use App\Document\Group;
 use App\Document\HabitCompletion;
 use App\Document\PointLog;
+use App\Document\Invitation;
 use App\Form\HabitType;
 use App\Form\GroupType;
 use App\Form\UserType;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\CodePointString;
 
 class HomeController extends AbstractController
 {
@@ -31,14 +33,19 @@ class HomeController extends AbstractController
     {   
         $userId = $session->get('connected_user');
         $connected = false;
-
+        $userHabits = [];
+        $groupHabits = [];
+        $groups = [];
+        $this->getNewNotifs($this->dm->getRepository(User::class)->find($userId),$session);
+        $logs = $this->dm->getRepository(PointLog::class)->findBy(['id' => ['$in' => $session->get('logs') ? $session->get('logs') : []]]);
+        $invits = $this->dm->getRepository(Invitation::class)->findBy(['id' => ['$in' => $session->get('invit')? $session->get('invit') : []]]);
+        $notifs = $this->getOrderedNotifs($logs,$invits,$this->dm->getRepository(User::class)->find($userId),$session);
         if ($userId) {
             $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
             if ($user) {
                 $connected = true;
                 $userHabits = $this->dm->getRepository(Habit::class)->findBy(['user' => $user]);
 
-                $groupHabits = [];
                 $groupRepository = $this->dm->getRepository(Group::class);
                 $groups = $groupRepository->findAll();
 
@@ -59,12 +66,24 @@ class HomeController extends AbstractController
                     ];
                 }, $completedHabits);
 
+                if ($user->getGroup()) {
+                    $group = $user->getGroup();
+                    $creator = $this->dm->getRepository(User::class)->find($group->getCreator()->getId());
+                    $group->creator = $creator;
+                }
+                
+                if ($user->getGroup()) {
+                    $groupHabits = $this->dm->getRepository(Habit::class)->findBy(['group_id' => $user->getGroup()->getId()]);
+                }
                 return $this->render('home/index.html.twig', [
                     'user' => $user,
                     'userHabits' => $userHabits,
                     'groupHabits' => $groupHabits,
                     'groups' => $groups,
                     'connected' => $connected,
+                    'logs' => $logs,
+                    'invitations' => $invits,
+                    'allNotifs' => $notifs,
                 ]);
             }
         } else {
@@ -101,26 +120,53 @@ class HomeController extends AbstractController
             'userHabits' => $userHabits,
             'groups' => $groups,
             'connected' => $connected,
+            'logs' => [],
+            'invit' => [],
+            'notifs' => [],
         ]);
         }
     }
 
     #[Route('/habitica-home/delete/{id}', name: 'user_delete', methods: ['POST'])]
-    public function deleteUser(Request $request, string $id): Response
-    {
+    public function deleteUser(Request $request, string $id ,SessionInterface $session): Response
+    {   
+
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
         $user = $this->dm->getRepository(User::class)->find($id);
         if ($user) {
             $this->dm->remove($user);
             $this->dm->flush();
         }
 
-        return $this->redirectToRoute('home_index');
+        return $this->redirectToRoute('home_index', [
+            'connected' => $connected,
+        ]);
     }
 
-    #[Route('/habitica-home/add_habit/{userId}/{groupId}', name: 'add_habit', methods: ['GET', 'POST'])]
-    public function addHabit(Request $request, string $userId, ?string $groupId = null): Response
-    {
+    #[Route('/habitica-home/add_habit/{userId}/{groupId?}', name: 'add_habit', methods: ['GET', 'POST'])]
+    public function addHabit(Request $request, string $userId, ?string $groupId = null ,SessionInterface $session): Response
+    {   
+
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
+            if ($user) {
+                $connected = true;
+            }
+        }
+
         $user = $this->dm->getRepository(User::class)->find($userId);
+
+        $group = $groupId ? $this->dm->getRepository(Group::class)->find($groupId) : null;
+
         if (!$user) {
             throw $this->createNotFoundException('User not found');
         }
@@ -133,8 +179,13 @@ class HomeController extends AbstractController
             $habit->creator_id = $userId;
             $habit->group_id = $groupId;
             $this->dm->persist($habit);
-            $user->addHabitId($habit->id);
-            $user->setCreatedHabitToday(true);
+            if ($groupId){
+                $group->setCreatedHabitToday(true);
+                $this->dm->persist($group);
+            } else {
+                $user->addHabitId($habit->id);
+                $user->setCreatedHabitToday(true);
+            }
             $this->dm->flush();
 
             $habitCompletion = new HabitCompletion();
@@ -159,13 +210,24 @@ class HomeController extends AbstractController
         return $this->render('home/add-habit.html.twig', [
             'form' => $form->createView(),
             'groupId' => $groupId,
+            'connected' => $connected,
         ]);
     }
 
 
     #[Route('/habitica-home/complete-habit/{userId}/{habitId}', name: 'complete_habit', methods: ['POST'])]
-    public function completeHabit(Request $request, string $userId, string $habitId): Response
-    {
+    public function completeHabit(Request $request, string $userId, string $habitId ,SessionInterface $session): Response
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
+            if ($user) {
+                $connected = true;
+            }
+        }
+
         $user = $this->dm->getRepository(User::class)->find($userId);
         $habit = $this->dm->getRepository(Habit::class)->find($habitId);
         $group = $this->dm->getRepository(Group::class)->find($habit->group_id);
@@ -197,27 +259,40 @@ class HomeController extends AbstractController
 
             $pointLog->setHabit($habit);
 
+            switch ($habit->difficulty) {
+                case 0:
+                    $points = 1;
+                    $reason = 'Completed a very easy habit';
+                    break;
+                case 1:
+                    $points = 2;
+                    $reason = 'Completed an easy habit';
+                    break;
+                case 2:
+                    $points = 5;
+                    $reason = 'Completed a medium habit';
+                    break;
+                case 3:
+                    $points = 10;
+                    $reason = 'Completed a very hard habit';
+                    break;
+                default:
+                    $points = 0;
+                    $reason = 'Unknown difficulty';
+            }
 
-            if ($habit->difficulty === 0) {
-                $pointLog->setPointsChange(1);
-                $pointLog->setReason('Completed a very easy habit');
+            $pointLog->setPointsChange($points);
+            $pointLog->setReason($reason);
 
-                $user->setPoints($user->getPoints() + 1);
-            } elseif ($habit->difficulty === 1) {
-                $pointLog->setPointsChange(2);
-                $pointLog->setReason('Completed an easy habit');
-
-                $user->setPoints($user->getPoints() + 2);
-            } elseif ($habit->difficulty === 2) {
-                $pointLog->setPointsChange(5);
-                $pointLog->setReason('Completed a medium habit');
-
-                $user->setPoints($user->getPoints() + 5);
-            } elseif ($habit->difficulty === 3) {
-                $pointLog->setPointsChange(10);
-                $pointLog->setReason('Completed a very hard habit');
-
-                $user->setPoints($user->getPoints() + 10);
+            if($habit->getGroupId() !== null){
+                $group = $this->dm->getRepository(Group::class)->find($habit->getGroupIdAsObjectId());
+                if($group){
+                    $pointLog->setGroup($group);
+                    $group->setPoints($group->getPoints() + $points);
+                    $this->dm->persist($group);
+                }
+            } else {
+                $user->setPoints($user->getPoints() + $points);
             }
 
             $pointLog->setTimestamp(new \DateTime());
@@ -232,33 +307,49 @@ class HomeController extends AbstractController
                 $pointLog = $this->dm->getRepository(PointLog::class)->findOneBy(['user' => $user, 'habit' => $habit]);
                 if ($pointLog) {
                     $this->dm->remove($pointLog);
-                    if ($habit->difficulty === 0) {
-                        $user->setPoints($user->getPoints() - 1);
-                    } elseif ($habit->difficulty === 1) {
-                        $user->setPoints($user->getPoints() - 2);
-                    } elseif ($habit->difficulty === 2) {
-                        $user->setPoints($user->getPoints() - 5);
-                    } elseif ($habit->difficulty === 3) {
-                        $user->setPoints($user->getPoints() - 10);
+                    if($habit->getGroupId() !== null){
+                            $group = $this->dm->getRepository(Group::class)->find($habit->getGroupIdAsObjectId());
+                            switch ($habit->difficulty) {
+                                case 0: $group->setPoints($group->getPoints() - 1); break;
+                                case 1: $group->setPoints($group->getPoints() - 2); break;
+                                case 2: $group->setPoints($group->getPoints() - 5); break;
+                                case 3: $group->setPoints($group->getPoints() - 10); break;
+                            }
+                        } else {
+                            switch ($habit->difficulty) {
+                                case 0: $user->setPoints($user->getPoints() - 1); break;
+                                case 1: $user->setPoints($user->getPoints() - 2); break;
+                                case 2: $user->setPoints($user->getPoints() - 5); break;
+                                case 3: $user->setPoints($user->getPoints() - 10); break;
+                            }
+                        }
                     }
                 }
             }
+        
 
-        $userHabits = $this->dm->getRepository(Habit::class)->findBy(['user' => $user]);
-        $groupHabits = []; // Define the variable
+        $this->dm->flush();
 
-        return $this->render('home/index.html.twig', [
-            'user' => $user,
-            'userHabits' => $userHabits,
-            'groupHabits' => $groupHabits
+        return $this->redirectToRoute('home_index', [
+            'connected' => $connected,
         ]);
-        }
     }
+
     
 
     #[Route('/habitica-home/delete_habit/{habitId}', name: 'delete_habit', methods: ['POST'])]
-    public function deleteHabit(Request $request, string $habitId): Response
-    {
+    public function deleteHabit(Request $request, string $habitId ,SessionInterface $session): Response
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
+            if ($user) {
+                $connected = true;
+            }
+        }   
+        
         $habit = $this->dm->getRepository(Habit::class)->find($habitId);
         if ($habit) {
             $user = $this->dm->getRepository(User::class)->find($habit->creator_id);
@@ -276,6 +367,132 @@ class HomeController extends AbstractController
             }
         }
 
-        return $this->redirectToRoute('home_index');
+        return $this->redirectToRoute('home_index', [
+            'connected' => $connected,
+        ]);
+    }
+    #[Route('/accept/{groupId}/{invitId}', name: "accept_invit", methods: ['POST'])]
+    public function acceptInvitation(Request $request, SessionInterface $session, string $groupId, string $invitId) : Response
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
+        $group = $this->dm->getRepository(Group::class)->find($groupId);
+        $user = $this->dm->getRepository(User::class)->find($session->get('connected_user'));
+        $user->setGroup($group);
+        $this->removeInvitation($invitId);
+        $pointLog = new PointLog();
+        $pointLog->setPointsChange(0);
+        $pointLog->setUser($user);
+        $pointLog->setGroup($group);
+        $pointLog->setReason($user->getUsername() . " joined your group " . $group->getName() . " !" );
+        $this->dm->persist($pointLog);
+        $this->dm->persist($user);
+        $this->dm->flush();
+        return $this->redirectToRoute('home_index', [
+            'connected' => $connected
+        ]);
+    }
+
+    #[Route('/decline/{groupId}/{invitId}', name: "decline_invit", methods: ['POST'])]
+    public function declineInvitation(Request $request, SessionInterface $session, string $groupId, string $invitId) : Response
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+        
+        $group = $this->dm->getRepository(Group::class)->find($groupId);
+        $invit = $this->dm->getRepository(Invitation::class)->find($invitId);
+        $user = $this->dm->getRepository(User::class)->find($session->get('connected_user'));
+        $pointLog = new PointLog();
+        $pointLog->setPointsChange(0);
+        $pointLog->setUser($invit->getSender());
+        $pointLog->setGroup($group);
+        $pointLog->setReason($user->getUsername() . " declined your invitation.");
+        $this->dm->persist($pointLog);
+        $this->removeInvitation($invitId);
+        $this->dm->remove($invit);
+        $this->dm->flush();
+        return $this->redirectToRoute('home_index', [
+            'connected' => $connected
+        ]);
+
+        
+    }
+    private function removeInvitation(string $invitation)
+    {
+        $invit = $this->dm->getRepository(Invitation::class)->find($invitation);
+        $this->dm->remove($invit);
+    }
+
+    public function getOrderedNotifs(array $logs, array $invits,?User $user, SessionInterface $session):array 
+    {
+        if (!$user) {
+            return [];
+        }
+
+        $allNotifs = array_merge($logs, $invits);
+        usort($allNotifs, function ($a, $b) {
+            return $b->getTimestamp() <=> $a->getTimestamp();
+        });
+        return $allNotifs;
+    }
+
+    public function getNewNotifs(?User $user, SessionInterface $session)
+    {
+        if (!$user)
+        {
+            return;
+        }
+        $newLogs = $this->getPointsLogByUser($user->getId(),$user->getGroup() ? $user->getGroup()->getId() : null, $session);
+        $newInvit = $this->getInvitationByUser($user->getId(),$session);
+        $session->set('logs', array_map(function($log){return $log->getId();},$newLogs));
+        $session->set('invit', array_map(function($invitation){return $invitation->getId();},$newInvit));    
+    }
+
+    private function getPointsLogByUser(?string $userId, ?string $groupId, SessionInterface $session) : array
+    {
+        if (!$userId) {
+            return [];
+        }
+        $allPointsLog = $this->dm->getRepository(PointLog::class)->findAll();
+        $pointsLogs = [];
+        foreach($allPointsLog as $log)
+        {
+            if ($log->getUser()->getId() == $userId || $log->getGroup() ? $log->getGroup()->getId() == $groupId : false)
+            {
+                array_push($pointsLogs,$log);
+            }
+        }
+        $session->set('logs',array_map(function($log) {
+            return $log->getId();
+        },$pointsLogs));
+        return $pointsLogs;
+    }
+
+    private function getInvitationByUser(?string $userId,SessionInterface $session):array
+    {
+        if (!$userId) {
+            return [];
+        }
+        $allInvitations = $this->dm->getRepository(Invitation::class)->findAll();
+        $invitations = [];
+        foreach($allInvitations as $invit)
+        {
+            if ($invit->getReceiver()->getId() == $userId){
+                array_push($invitations,$invit);
+            }  
+        }
+        $session->set('invit',array_map(function($invit) {
+            return $invit->getId();
+        },$invitations));
+        return $invitations;
     }
 }

@@ -6,11 +6,13 @@ use App\Document\Invitation;
 use App\Document\User;
 use App\Document\UserHabit;
 use App\Document\PointLog;
+
 use App\Document\Habit;
 use App\Document\HabitCompletion;
 use App\Form\UserType;
 use App\Form\GroupType;
 use App\Form\HabitType;
+use App\Controller\HomeController;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use MongoDB\BSON\Regex;
 use Psr\Log\LoggerInterface;
@@ -34,7 +36,14 @@ class GroupController extends AbstractController
 
     #[Route('/group', name: 'app_group')]
     public function index(Request $request,SessionInterface $session): Response
-    {
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
         if (!$session->get('connected_user'))
         {
             return $this->redirectToRoute('home_index');
@@ -42,9 +51,13 @@ class GroupController extends AbstractController
         $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
         if (!$user->getGroup()) 
         {
-            return $this->redirectToRoute('create_group');
+            return $this->redirectToRoute('create_group', [
+                'connected' => $connected,
+            ]);
         } else {
-            return $this->redirectToRoute('view_group');
+            return $this->redirectToRoute('view_group', [
+                'connected' => $connected,
+            ]);
         }
     }
 
@@ -55,45 +68,74 @@ class GroupController extends AbstractController
         $form = $this->createForm(GroupType::class, $group);
         $form->handleRequest($request);
 
+        $userId = $session->get('connected_user');
+        $connected = false;
+        $control = new HomeController($this->dm);
+        $control->getNewNotifs($this->dm->getRepository(User::class)->find($userId),$session);
+        $logs = $this->dm->getRepository(PointLog::class)->findBy(['id' => ['$in' => $session->get('logs') ? $session->get('logs') : []]]);
+        $invits = $this->dm->getRepository(Invitation::class)->findBy(['id' => ['$in' => $session->get('invit')? $session->get('invit') : []]]);
+        $notifs = $control->getOrderedNotifs($logs,$invits,$this->dm->getRepository(User::class)->find($userId),$session);
+        $connected_user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
+
+        
+        if ($userId) {
+            $connected = true;
+        }
+
         if ($form->isSubmitted() && $form->isValid())
         {
 
-            $emails = (array) $form->get('emails')->getData();
-            foreach ($emails as $email)
-            {
-                $user = $this->dm->getRepository(User::class)->findOneBy(['email' => $email]);
+            $identifier = $form->get('emails')->getData();
+            if (str_contains($identifier,'@')) {
+                $user = $this->dm->getRepository(User::class)->findOneBy(['email' => $identifier]);
+            } else {
+                $user = $this->dm->getRepository(User::class)->findOneBy(['username' => $identifier]);
+            }        
 
-                if ($user && !$user->getGroup())
-                {
-                    $user->setGroup($group);
-                    $this->dm->persist($user);
-                }
-                $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
-                if ($user)
-                {
-                    $user->setGroup($group);
-                    $group->setCreator($user);
-                    $this->dm->persist($group);
-                    $this->dm->persist($user);
-                }
-            }
-
+            $group->setCreator($connected_user);
+            $this->dm->persist($group);
+            $connected_user->setGroup($group);
+            $this->dm->persist($connected_user);
             $this->dm->flush();
-            return $this->redirectToRoute('view_group');
+            if ($user && !$user->getGroup())
+            {
+                $this->createInvitation($connected_user,$user,$group);
+            }
+            return $this->redirectToRoute('view_group', [
+                'connected' => $connected,
+            ]);
         }
 
         return $this->render('group/createGroup.html.twig', [
             'form' => $form->createView(),
+            'connected' => $connected,
+            'logs' => $logs,
+            'invitations' => $invits,
+            'allNotifs' => $notifs,
         ]);
     }
 
     #[Route('/view_group', name: "view_group")]
     public function view(Request $request, SessionInterface $session): Response
     {
+        $userId = $session->get('connected_user');
+        $connected = false;
+        $control = new HomeController($this->dm);
+        $control->getNewNotifs($this->dm->getRepository(User::class)->find($userId),$session);
+        $logs = $this->dm->getRepository(PointLog::class)->findBy(['id' => ['$in' => $session->get('logs') ? $session->get('logs') : []]]);
+        $invits = $this->dm->getRepository(Invitation::class)->findBy(['id' => ['$in' => $session->get('invit')? $session->get('invit') : []]]);
+        $notifs = $control->getOrderedNotifs($logs,$invits,$this->dm->getRepository(User::class)->find($userId),$session);
+       
+        if ($userId) {
+            $connected = true;
+        }
 
         $connected_user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
         $group = $connected_user->getGroup();
-
+        if (!$group)
+        {
+            return $this->redirectToRoute('create_group');
+        }
         $formAddUser = $this->createForm(GroupType::class, $group);
         $formAddUser->handleRequest($request);
 
@@ -102,17 +144,20 @@ class GroupController extends AbstractController
         $formAddTask->handleRequest($request);
         if ($formAddUser->isSubmitted() && $formAddUser->isValid())
         {
-            $emails = (array) $formAddUser->get('emails')->getData();
-
-            foreach($emails as $email) {
-                $user = $this->dm->getRepository(User::class)->findOneBy(['email' => $email]);
-
-                if ($user)
-                {
-                    $this->createInvitation($connected_user,$user,$group);
-                }
+            $identifier = $formAddUser->get('emails')->getData();
+            if (str_contains($identifier,'@')) {
+                $user = $this->dm->getRepository(User::class)->findOneBy(['email' => $identifier]);
+            } else {
+                $user = $this->dm->getRepository(User::class)->findOneBy(['username' => $identifier]);
             }
-            return $this->redirectToRoute('view_group');
+            if ($user)
+            {
+                $this->createInvitation($connected_user,$user,$group);
+            }
+            
+            return $this->redirectToRoute('view_group', [
+                'connected' => $connected,
+            ]);
         }
 
         if ($formAddTask->isSubmitted() && $formAddTask->isValid())
@@ -124,7 +169,9 @@ class GroupController extends AbstractController
             $connected_user->addHabitId($habit->getId());
             $this->dm->persist($connected_user);
             $this->dm->flush();
-            return $this->redirectToRoute('view_group');
+            return $this->redirectToRoute('view_group', [
+                'connected' => $connected,
+            ]);
         }
         
         $this->dm->flush();
@@ -138,11 +185,22 @@ class GroupController extends AbstractController
             'groupHabit' => $groupHabit,
             'connected_user' => $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get("connected_user")]),
             'completed_task' => $this->getCompletedTask($group),
+            'connected' => $connected,
+            'logs' => $logs,
+            'invitations' => $invits,
+            'allNotifs' => $notifs,
         ]);
     }
     #[Route('/view_group/delete_task/{taskId}', name: 'delete_task', methods: ['POST'])]
-    public function deleteTask(Request $request, string $taskId) :Response
-    {
+    public function deleteTask(Request $request,SessionInterface $session, string $taskId) :Response
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
         $task = $this->dm->getRepository(Habit::class)->find($taskId);
         $taskCompletions = $this->dm->getRepository(HabitCompletion::class)->findBy(['habit' => $task ? $task : null]);
         if ($task) {
@@ -152,12 +210,21 @@ class GroupController extends AbstractController
             $this->dm->remove($task);
             $this->dm->flush();
         }
-        return $this->redirectToRoute('view_group');
+        return $this->redirectToRoute('view_group', [
+            'connected' => $connected,
+        ]);
     }
 
     #[Route('/view_group/complete_task/{taskId}', name:"complete_task", methods: ['POST'])]
     public function completeTask(Request $request, SessionInterface $session, string $taskId):Response
-    {
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
         $user = $this->dm->getRepository(User::class)->find($session->get('connected_user'));
         $task = $this->dm->getRepository(Habit::class)->find($taskId);
         $group = $this->dm->getRepository(Group::class)->find($task->getGroupId());
@@ -206,7 +273,9 @@ class GroupController extends AbstractController
         
         $this->dm->flush();
 
-        return $this->redirectToRoute('view_group');
+        return $this->redirectToRoute('view_group', [
+            'connected' => $connected,
+        ]);
 
     }
     private function getUserByGroup(?Group $group): array
@@ -229,6 +298,7 @@ class GroupController extends AbstractController
         $invitation->setGroup($group);
         $invitation->setSender($sender);
         $invitation->setReceiver($receiver);
+        $invitation->setTimestamp();
         $this->dm->persist($invitation);
         $this->dm->flush();
     }

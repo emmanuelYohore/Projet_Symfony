@@ -21,13 +21,55 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    {% if app.user %}
-                        <li class="nav-item"><a class="nav-link" href="{{ path('app_profile') }}">Profil</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ path('app_logout') }}">Déconnexion</a></li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{{ path('app_login') }}">Connexion</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ path('app_registration') }}">Inscription</a></li>
-                    {% endif %}
+                {% if connected %}
+                    <li class="nav-item"><a class="nav-link" href="{{ path('user_profile') }}">Profile</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_logout') }}">Logout</a></li>
+                    <li class="nav-item">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notifDropdown">
+                                {% if allNotifs is not empty %}
+                                    {% for notif in allNotifs %}
+                                        <li class="dropdown-item">
+                                            {% if notif in invitations %}
+                                                <p>You've been invited to join the group: <strong>{{ notif.group.name }}</strong></p>
+                                                <form action="{{ path('accept_invit', {'groupId': notif.group.id, 'invitId': notif.id}) }}" method="post" class="d-inline">
+                                                    <button class="btn btn-success btn-sm">Accept</button>
+                                                </form>
+                                                <form action="{{ path('decline_invit', {'groupId': notif.group.id, 'invitId': notif.id}) }}" method="post" class="d-inline">
+                                                    <button class="btn btn-danger btn-sm">Decline</button>
+                                                </form>
+                                            {% else %}
+                                                {% if notif.pointschange != 0 %}
+                                                    <b>{{notif.user.username}} {{ notif.reason|lower }} in {{notif.group.name}}</b><br>
+                                                {% elseif not notif.group %}
+                                                    <b>{{notif.user.username}} {{ notif.reason|lower }}</b><br>
+                                                {% else %}
+                                                    <b>{{notif.reason}}</b><br>
+                                                {% endif %}
+                                                {% if notif.pointschange > 0 %}
+                                                    <span class="text-success">+{{ notif.pointschange }} points</span>
+                                                {% elseif notif.pointschange < 0 %}
+                                                    <span class="text-danger">{{ notif.pointschange }} points</span>
+                                                {% endif %}
+                                            {% endif %}
+                                            <p class="text-muted mb-0 small">Date: {{ notif.timestamp|date('d-m-Y H:i:s') }}</p>
+                                        </li>
+                                        <hr class="dropdown-divider">
+                                    {% endfor %}
+                                {% else %}
+                                    <li class="dropdown-item text-muted">No notifications</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_login') }}">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_registration') }}">Register</a></li>
+                {% endif %}
                 </ul>
             </div>
         </div>
@@ -40,4 +82,4 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+

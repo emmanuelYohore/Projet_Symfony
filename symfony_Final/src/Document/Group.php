@@ -23,6 +23,9 @@ class Group
     #[ODM\ReferenceOne(targetDocument: User::class)]
     private ?User $creator = null;
 
+    #[ODM\field(type: "bool")]
+    private $created_habit_today = false;
+
     public function __construct()
     {
         $this->totalPoints = 0;
@@ -61,6 +64,17 @@ class Group
     public function setCreator(User $user): self
     {
         $this->creator = $user;
+        return $this;
+    }
+
+    public function getCreatedHabitToday(): bool
+    {
+        return $this->created_habit_today;
+    }
+
+    public function setCreatedHabitToday(bool $created_habit_today): self
+    {
+        $this->created_habit_today = $created_habit_today;
         return $this;
     }
 }
