@@ -474,10 +474,13 @@ class HomeController extends AbstractController
         $pointsLogs = [];
         foreach($allPointsLog as $log)
         {
-            if ($log->getUser()->getId() == $userId || $log->getGroup() ? $log->getGroup()->getId() == $groupId : false)
+            if ($log->getUser()->getId() == $userId)
             {
                 array_push($pointsLogs,$log);
-            }
+            } else if ($log->getGroup()) {
+                if ($log->getGroup()->getId() == $groupId) {
+                    array_push($pointsLogs, $log);
+            }}
         }
         $session->set('logs',array_map(function($log) {
             return $log->getId();

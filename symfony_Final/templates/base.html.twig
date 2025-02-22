@@ -43,12 +43,12 @@
                                                     <button class="btn btn-danger btn-sm">Decline</button>
                                                 </form>
                                             {% else %}
-                                                {% if notif.pointschange != 0 %}
-                                                    <b>{{notif.user.username}} {{ notif.reason|lower }} in {{notif.group.name}}</b><br>
+                                                {% if notif.pointschange == 0 %}
+                                                    <b>{{notif.reason}}</b><br>
                                                 {% elseif not notif.group %}
                                                     <b>{{notif.user.username}} {{ notif.reason|lower }}</b><br>
                                                 {% else %}
-                                                    <b>{{notif.reason}}</b><br>
+                                                    <b>{{notif.user.username}} {{ notif.reason|lower }} in {{notif.group.name}}</b><br>
                                                 {% endif %}
                                                 {% if notif.pointschange > 0 %}
                                                     <span class="text-success">+{{ notif.pointschange }} points</span>
