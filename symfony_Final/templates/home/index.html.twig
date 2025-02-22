@@ -12,68 +12,75 @@
         <form action="{{ path('app_logout') }}" method="post">
             <button type="submit" class="btn btn-danger">Logout</button>
         </form>
-        <h2>Your Habits</h2>
-        {% if userHabits is empty %}
-            <p>You still don't have habits.</p>
-            <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group.id}) }}" method="get">
-                <button type="submit" class="btn">Add habit</button>
-            </form>
-        {% else %}
-            <ul>
-                {% for habit in user.habits %}
-                    <h2>{{ habit.name }}</h2><br>
-                    <span>Description: {{ habit.description }}</span><br>
-                    <span>Difficulty: {{ habit.difficulty }}</span><br>
-                    <span>Periodicity: {{ habit.periodicity }}</span><br>
-                    <form action="{{ path('complete_habit', {'userId': user.id, 'habitId': habit.id}) }}" method="post">
-                        <input type="hidden" name="completed" value="0">
-                        <input type="checkbox" name="completed" value="1" 
-                            {% for completedHabit in user.completedHabits %}
-                                {% if completedHabit.habitId == habit.id and completedHabit.isCompleted %}
-                                    checked
-                                {% endif %}
-                            {% endfor %}
-                            onchange="this.form.submit()">
-                        <br>
-                    </form>
-                    <form method="post" action="{{ path('delete_habit', {'habitId': habit.id}) }}" onsubmit="return confirm('Are you sure you want to delete this habit?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('deleteHabit' ~ habit.id) }}">
-                        <button class="btn">Delete Habit</button>
-                    </form>
-                {% endfor %}
-            </ul>
-            {% if user.createdHabitToday %}
-                <p>You have already created a habit today.</p>
-            {% else %}
-                <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group.id}) }}" method="get">
-                    <button type="submit" class="btn">Add habit</button>
-                </form>
-            {% endif %}
-        {% endif %}
 
-        {% if user.group_id %}
-            <h2>Your Group</h2>
-            {% if groupHabits is not empty %}
-                <h2>Les habitudes de votre groupe</h2>
-                <ul>
-                    {% for habit in groupHabits %}
-                        <li>
-                            <strong>{{ habit.name }}</strong>: {{ habit.description }}
-                            <span style="color: {{ habit.color }};">⬤</span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>Votre groupe n'a pas encore d'habitudes.</p>
-                <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group_id}) }}" method="get">
-                    <button type="submit" class="btn">Add habit</button>
-                </form>
-            {% endif %}
-        {% else %}
-            <form action="{{ path('create_group', {'userId': user.id}) }}" method="get">
-                <button type="submit" class="btn">Create a group</button>
-            </form>
-        {% endif %}
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Your Habits</h2>
+                {% if userHabits is empty %}
+                    <p>You still don't have habits.</p>
+                    <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group ? user.group.id : 0}) }}" method="get">
+                        <button type="submit" class="btn">Add habit</button>
+                    </form>
+                {% else %}
+                    <ul>
+                        {% for habit in user.habits %}
+                            <h2>{{ habit.name }}</h2><br>
+                            <span>Description: {{ habit.description }}</span><br>
+                            <span>Difficulty: {{ habit.difficulty }}</span><br>
+                            <span>Periodicity: {{ habit.periodicity }}</span><br>
+                            <form action="{{ path('complete_habit', {'userId': user.id, 'habitId': habit.id}) }}" method="post">
+                                <input type="hidden" name="completed" value="0">
+                                <input type="checkbox" name="completed" value="1" 
+                                    {% for completedHabit in user.completedHabits %}
+                                        {% if completedHabit.habitId == habit.id and completedHabit.isCompleted %}
+                                            checked
+                                        {% endif %}
+                                    {% endfor %}
+                                    onchange="this.form.submit()">
+                                <br>
+                            </form>
+                            <form method="post" action="{{ path('delete_habit', {'habitId': habit.id}) }}" onsubmit="return confirm('Are you sure you want to delete this habit?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('deleteHabit' ~ habit.id) }}">
+                                <button class="btn">Delete Habit</button>
+                            </form>
+                        {% endfor %}
+                    </ul>
+                    {% if user.createdHabitToday %}
+                        <p>You have already created a habit today.</p>
+                    {% else %}
+                        <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group ? user.group.id : 0}) }}" method="get">
+                            <button type="submit" class="btn">Add habit</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <div class="col-md-6">
+                {% if user.group %}
+                    <h2>Your Group</h2>
+                    {% if groupHabits is not empty %}
+                        <h2>Les habitudes de votre groupe</h2>
+                        <ul>
+                            {% for habit in groupHabits %}
+                                <li>
+                                    <strong>{{ habit.name }}</strong>: {{ habit.description }}
+                                    <span style="color: {{ habit.color }};">⬤</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>Votre groupe n'a pas encore d'habitudes.</p>
+                        <form action="{{ path('add_habit', {'userId': user.id, 'groupId': user.group.id}) }}" method="get">
+                            <button type="submit" class="btn">Add habit</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <form action="{{ path('create_group', {'userId': user.id}) }}" method="get">
+                        <button type="submit" class="btn">Create a group</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
     {% else %}
         <h1>Welcome to Habitica!</h1>
         <a href="{{ path('app_login') }}" class="btn btn-primary">Login</a>
