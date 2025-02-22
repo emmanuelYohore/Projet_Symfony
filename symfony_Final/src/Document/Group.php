@@ -7,7 +7,6 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use MongoDB\BSON\ObjectId;
 
 #[ODM\Document(collection: 'groups')]
-#[ODM\Index(keys: ['name' => 'asc'])]
 
 class Group
 {
@@ -20,6 +19,12 @@ class Group
 
     #[ODM\Field(type: "int")]
     private $totalPoints;
+
+    #[ODM\ReferenceOne(targetDocument: User::class)]
+    private ?User $creator = null;
+
+    #[ODM\field(type: "bool")]
+    private $created_habit_today = false;
 
     public function __construct()
     {
@@ -49,6 +54,27 @@ class Group
     }
     public function setPoints(int $points): self{
         $this->totalPoints = $points;
+        return $this;
+    }
+
+    public function getCreator(): ?User {
+        return $this->creator;
+    }
+
+    public function setCreator(User $user): self
+    {
+        $this->creator = $user;
+        return $this;
+    }
+
+    public function getCreatedHabitToday(): bool
+    {
+        return $this->created_habit_today;
+    }
+
+    public function setCreatedHabitToday(bool $created_habit_today): self
+    {
+        $this->created_habit_today = $created_habit_today;
         return $this;
     }
 }

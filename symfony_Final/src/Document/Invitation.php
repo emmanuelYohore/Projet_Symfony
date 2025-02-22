@@ -7,69 +7,69 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use MongoDB\BSON\ObjectId;
 
 #[ODM\Document(collection: 'invitation')]
-#[ODM\Index(keys: ['sender' => 'asc'])]
 
 class Invitation
 {
     #[ODM\Id(strategy: "AUTO")]
     private $id;
 
-    #[ODM\Field(type: 'string')]
-    private $sender;
+    #[ODM\ReferenceOne(targetDocument: User::class)]
+    private ?User $sender = null;
 
-    #[ODM\Field(type: 'string')]
-    private $receiver;
+    #[ODM\ReferenceOne(targetDocument: User::class)]
+    private ?User $receiver = null;
 
-    #[ODM\Field(type: 'string')]
-    private $group;
-
-    #[ODM\Field(type: 'string')]
-    private $status;
+    #[ODM\ReferenceOne(targetDocument:Group::class)]
+    private ?Group $group = null;
+    
+    #[ODM\Field(type: "date")]
+    private ?\DateTime $timestamp = null;
 
     public function __contruct()
     {
-        $this->status = "pending";
+        $this->timestamp = new \DateTime();
     }
 
     public function getId() :?string
     {
         return $this->id;
     }
-    public function getSender() :?string
+    public function getSender() :?User
     {
         return $this->sender;
     }
-    public function getReceiver() :?string
+    public function getReceiver() :?User
     {
         return $this->receiver;
     }
-    public function getGroup() :?string
+    public function getGroup() :?Group
     {
         return $this->group;
     }
-    public function setSender(string $sender) : self
+    public function setSender(?User $sender) : self
     {
         $this->sender = $sender;
         return $this;
     }
-    public function setReceiver(string $receiver) : self
+    public function setReceiver(?User $receiver) : self
     {
         $this->receiver = $receiver;
         return $this;
     }
-    public function setGroup(string $group) : self
+    public function setGroup(?Group $group) : self
     {
         $this->group = $group;
         return $this;
     }
-    public function getStatus() :?string
+   
+    public function getTimestamp() : \DateTime
     {
-        return $this->status;
+        return $this->timestamp;
     }
 
-    public function setStatus(string $status) : self
+    public function setTimestamp() :self
     {
-        $this->status = $status;
+        $this->timestamp = new \DateTime();
         return $this;
     }
 

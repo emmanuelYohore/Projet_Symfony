@@ -25,12 +25,12 @@ class RegistrationController extends AbstractController
     public function index(Request $request, SessionInterface $session): Response
     {
         $user = new User();
-        $form = $this->createForm(UserType::class, $user); // Création du formulaire
+        $form = $this->createForm(UserType::class, $user); 
         $form->handleRequest($request);
 
-        // Si le formulaire est soumis et valide
+        
         if ($form->isSubmitted() && $form->isValid()) {
-
+            
             $profilePicture = $form->get("profile_picture")->getData();
 
             if ($profilePicture)
@@ -57,18 +57,18 @@ class RegistrationController extends AbstractController
 
             $user->setPassword(password_hash($user->getPassword(), PASSWORD_BCRYPT));
 
-            // Sauvegarde de l'utilisateur dans la base de données
+            
             $this->dm->persist($user);
-            $this->dm->flush(); // On flush les changements (sauvegarde dans la base)
+            $this->dm->flush(); 
 
-            // Message flash de succès
-            // Redirection vers la page d'accueil après l'inscription
+            
+            
             return $this->redirectToRoute('home_index');
         }
 
-        // Si le formulaire n'est pas encore soumis ou valide
+        
         return $this->render('registration/index.html.twig', [
-            'form' => $form->createView(), // Passer le formulaire à la vue
+            'form' => $form->createView(), 
         ]);
     }
 }

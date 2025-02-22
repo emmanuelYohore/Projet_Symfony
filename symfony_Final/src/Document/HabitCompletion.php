@@ -13,17 +13,27 @@ class HabitCompletion
     public ?string $id = null;
 
     #[ODM\ReferenceOne(targetDocument: User::class)]
-    public User $user;
+    public ?User $user = null;
 
     #[ODM\ReferenceOne(targetDocument: Habit::class)]
-    public Habit $habit;
+    public ?Habit $habit = null;
+
+    #[ODM\Field(type: 'bool')]
+    public bool $completed = false;
 
     #[ODM\Field(type: 'date')]
-    public \DateTime $completedAt;
+    public ?\DateTime $completed_at = null ; 
+
+    #[ODM\Field(type: 'date')]
+    public ?\DateTime $start_date = null ; 
+
+    #[ODM\Field(type: 'date')]
+    public ?\DateTime $end_date = null ; 
 
     public function __construct()
     {
-        // Initialisation des valeurs par défaut si nécessaire
+        $this->completed = false;
+        $this->completedAt = new \DateTime();
     }
 
     // Getters et setters
@@ -32,7 +42,7 @@ class HabitCompletion
         return $this->id;
     }
 
-    public function getUser(): User
+    public function getUser(): ?User
     {
         return $this->user;
     }
@@ -44,7 +54,7 @@ class HabitCompletion
         return $this;
     }
 
-    public function getHabit(): Habit
+    public function getHabit(): ?Habit
     {
         return $this->habit;
     }
@@ -56,14 +66,50 @@ class HabitCompletion
         return $this;
     }
 
-    public function getCompletedAt(): \DateTime
+    public function isCompleted(): bool
     {
-        return $this->completedAt;
+        return $this->completed;
     }
 
-    public function setCompletedAt(\DateTime $completedAt): self
+    public function setCompleted(bool $completed): self
     {
-        $this->completedAt = $completedAt;
+        $this->completed = $completed;
+
+        return $this;
+    }
+
+    public function getCompletedAt(): ?\DateTime
+    {
+        return $this->completed_at;
+    }
+
+    public function setCompletedAt(?\DateTime $completed_at): self
+    {
+        $this->completed_at = $completed_at;
+
+        return $this;
+    }
+
+    public function getStartDate(): ?\DateTime
+    {
+        return $this->start_date;
+    }
+
+    public function setStartDate(?\DateTime $start_date): self
+    {
+        $this->start_date = $start_date;
+
+        return $this;
+    }
+
+    public function getEndDate(): ?\DateTime
+    {
+        return $this->end_date;
+    }
+
+    public function setEndDate(?\DateTime $end_date): self
+    {
+        $this->end_date = $end_date;
 
         return $this;
     }
