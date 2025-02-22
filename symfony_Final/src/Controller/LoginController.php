@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Document\User; // Ajout de l'import de User
+use App\Document\User; 
 use App\Form\LoginType;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\Form\FormFactoryInterface;

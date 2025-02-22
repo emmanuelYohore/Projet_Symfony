@@ -69,7 +69,7 @@ class HomeController extends AbstractController
                 if ($user->getGroup()) {
                     $group = $user->getGroup();
                     $creator = $this->dm->getRepository(User::class)->find($group->getCreator()->getId());
-                    $group->creator = $creator;
+                    $group->setCreator($creator);
                 }
                 
                 if ($user->getGroup()) {
