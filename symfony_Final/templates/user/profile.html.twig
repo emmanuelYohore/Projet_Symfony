@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Profil de {{ user.username }}{% endblock %}
+{% block title %}Profile of {{ user.username }}{% endblock %}
 
 {% block body %}
 <div class="container mt-5">
@@ -8,22 +8,35 @@
         <div class="col-md-8">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h1 class="mb-4 text-center">Profil de {{ user.username }}</h1>
+                    <h1 class="mb-4 text-center">Profile of {{ user.username }}</h1>
 
-                    <div>
-                        <p><strong>Nom d'utilisateur :</strong> {{ user.username }}</p>
-                        <p><strong>Email :</strong> {{ user.email }}</p>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            {% if user.profilePicture %}
+                                <p><strong>Profile Picture:</strong></p>
+                                <img src="{{ asset('uploads/' ~ user.profilePicture) }}" alt="Profile Picture" class="img-fluid" style="max-width: 150px;">
+                            {% else %}
+                                <p>No profile picture available.</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <p><strong>Username:</strong> {{ user.username }}</p>
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                            <p><strong>Creation Date:</strong> {{ user.createdAt|date('d/m/Y H:i') }}</p>
+                            <p class="mb-1"><strong>Change Profile Picture</strong></p>
+                            {{ form_start(changeProfilePictureForm) }}
+                                <div class="d-flex flex-column gap-2" style="max-width: 200px;">
+                                    {{ form_row(changeProfilePictureForm.profilePicture, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                    <button type="submit" class="btn btn-success btn-sm w-100">Change Picture</button>
+                                </div>
+                            {{ form_end(changeProfilePictureForm) }}
+                        </div>
+                    </div>
 
-                        {% if user.profilePicture %}
-                            <p><strong>Photo de profil :</strong></p>
-                            <img src="{{ asset('uploads/' ~ user.profilePicture) }}" alt="Photo de profil" class="img-fluid" style="max-width: 150px;">
-                        {% else %}
-                            <p>Aucune photo de profil disponible.</p>
-                        {% endif %}
-
-                        <p><strong>Date de création :</strong> {{ user.createdAt|date('d/m/Y H:i') }}</p>
-
-                        <a href="{{ path('home_index') }}" class="btn btn-primary">Retour à l'accueil</a>
+                    <div class="row mt-4 d-flex justify-content-between align-items-center">
+                        <div class="col-auto ms-auto">
+                            <a href="{{ path('home_index') }}" class="btn btn-primary btn-sm">Back to Home</a>
+                        </div>
                     </div>
                 </div>
             </div>
