@@ -22,7 +22,7 @@ class GroupType extends AbstractType
             ])
             ->add('emails', TextType::class, [
                 'mapped' => false,
-                'label' => "Invite other Users !",
+                'label' => "Add User",
             ])
             ->add('save',SubmitType::class, ['label' => "Add to Group"]);
     }
