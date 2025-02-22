@@ -9,6 +9,12 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h2 class="mb-4 text-center">Inscription</h2>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="mb-4 text-center">Inscription</h2>
 
                     {% for message in app.flashes('success') %}
                         <div class="alert alert-success">
@@ -54,14 +60,33 @@
                             {{ form_errors(form.password) }}
                         </div>
 
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">S'inscrire</button>
+                        </div>
+
                     {{ form_end(form) }}
+
+                    <p class="mt-3 text-center">
+                        Déjà inscrit ? <a href="{{ path('app_login') }}">Connectez-vous ici</a>
+                    </p>
                 </div>
             </div>
         </div>
-
-    {% for message in app.flashes('error') %}
-        <div class="alert alert-danger">
-            {{ message }}
-        </div>
     {% endfor %}
+
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+    {{ form_start(form) }}
+        {{ form_row(form.first_name) }}
+        {{ form_row(form.last_name) }}
+        {{ form_row(form.username) }}
+        {{ form_row(form.email) }}
+        {{ form_row(form.password) }}
+        {{form_row(form.save)}}       
+    {{ form_end(form) }}
+    <button type="submit">S'inscrire</button>
 {% endblock %}
