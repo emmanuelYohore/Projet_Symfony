@@ -35,6 +35,7 @@ class HomeController extends AbstractController
         $userHabits = [];
         $groupHabits = [];
         $groups = [];
+
         if ($userId) {
             $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
             if ($user) {
@@ -69,7 +70,9 @@ class HomeController extends AbstractController
                 
                 if ($user->getGroup()) {
                     $groupHabits = $this->dm->getRepository(Habit::class)->findBy(['group_id' => $user->getGroup()->getId()]);
-                }return $this->render('home/index.html.twig', [
+                }
+
+                return $this->render('home/index.html.twig', [
                     'user' => $user,
                     'userHabits' => $userHabits,
                     'groupHabits' => $groupHabits,
@@ -205,7 +208,6 @@ class HomeController extends AbstractController
             'form' => $form->createView(),
             'groupId' => $groupId,
             'connected' => $connected,
-            'allNotifs' => [],
         ]);
     }
 
@@ -379,27 +381,18 @@ class HomeController extends AbstractController
         return $allNotifs;
     }
 
-    private function getPointsLogByUser(?string $userId, ?string $groupId = 'a') : array
+    private function getPointsLogByUser(?string $userId, ?string $groupId) : array
     {
         if (!$userId) {
             return [];
         }
         $allPointsLog = $this->dm->getRepository(PointLog::class)->findAll();
         $pointsLogs = [];
-        $checkGroup = false;
-        
         foreach($allPointsLog as $log)
         {
-            
-            if ($log->getUser()->getId() == $userId)
+            if ($log->getUser()->getId() == $userId || $log->getGroup() ? $log->getGroup()->getId() == $groupId : false)
             {
                 array_push($pointsLogs,$log);
-            } else if ($log->getGroup())
-            {
-                if ($log->getGroup()->getId() == $groupId)
-                {
-                    array_push($pointsLogs,$log);
-                }
             }
         }
         return $pointsLogs;

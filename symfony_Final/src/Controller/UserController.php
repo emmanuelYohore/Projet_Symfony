@@ -3,8 +3,6 @@
 namespace App\Controller;
 
 use App\Document\User;
-use App\Document\PointLog;
-use App\Document\Invitation;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,7 +23,7 @@ class UserController extends AbstractController
     {   
         $userId = $session->get('connected_user');
         $connected = false;
-       
+
         if ($userId) {
             $connected = true;
         }
@@ -41,10 +39,7 @@ class UserController extends AbstractController
 
         return $this->render('user/profile.html.twig', [
             'user' => $user,
-            'connected' => $connected,
-            'logs' => [],
-            'invitations' =>[],
-            'allNotifs' =>[],
+            'connected' => $connected
         ]);
     }
 }

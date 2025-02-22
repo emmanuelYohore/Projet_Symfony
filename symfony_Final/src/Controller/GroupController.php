@@ -105,9 +105,6 @@ class GroupController extends AbstractController
         return $this->render('group/createGroup.html.twig', [
             'form' => $form->createView(),
             'connected' => $connected,
-            'logs' => [],
-            'invitations' =>[],
-            'allNotifs' =>[],
         ]);
     }
 
@@ -116,6 +113,7 @@ class GroupController extends AbstractController
     {
         $userId = $session->get('connected_user');
         $connected = false;
+
         if ($userId) {
             $connected = true;
         }
@@ -175,8 +173,6 @@ class GroupController extends AbstractController
             'connected_user' => $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get("connected_user")]),
             'completed_task' => $this->getCompletedTask($group),
             'connected' => $connected,
-            'logs' => [],
-            'invitations' => [],
             'allNotifs' => [],
         ]);
     }

@@ -21,18 +21,14 @@
     {{ form_end(formAddUser) }}
     <br>
     <br>
-    {% if connected_user.group.createdHabitToday %}
-        <p>You have already created a habit today.</p>
-    {% else %}
-        {{form_start(formAddTask)}}
-            {{form_row(formAddTask.name)}}
-            {{form_row(formAddTask.description)}}
-            {{form_row(formAddTask.difficulty)}}
-            {{form_row(formAddTask.color)}}
-            {{form_row(formAddTask.periodicity)}}
-            {{form_row(formAddTask.save)}}
-        {{form_end(formAddTask)}}
-    {% endif %}
+    {{form_start(formAddTask)}}
+        {{form_row(formAddTask.name)}}
+        {{form_row(formAddTask.description)}}
+        {{form_row(formAddTask.difficulty)}}
+        {{form_row(formAddTask.color)}}
+        {{form_row(formAddTask.periodicity)}}
+        {{form_row(formAddTask.save)}}
+    {{form_end(formAddTask)}}
     <h2>User in the group</h2>
     {% for user in groupUser %}
         <p>

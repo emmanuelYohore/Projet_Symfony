@@ -61,7 +61,7 @@ class RegistrationController extends AbstractController
             $this->dm->persist($user);
             $this->dm->flush(); 
 
-            $session->set('connected_user', $user->getId());
+            
             
             return $this->redirectToRoute('home_index');
         }

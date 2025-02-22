@@ -30,16 +30,14 @@ class LoginController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $identifier = $data['identifier'];
+            $username = $data['identifier'];
             $password = $data['password'];
-            if ($this->isEmail($identifier)){
-                $user = $this->dm->getRepository(User::class)->findOneBy(['email' => $identifier]);
-            } else {
-                $user = $this->dm->getRepository(User::class)->findOneBy(['username' => $identifier]);
-            }            
+
+            $user = $this->dm->getRepository(User::class)->findOneBy(['username' => $username]);
+
             if ($user && password_verify($password, $user->getPassword())) {
                 $session->set('connected_user', $user->getId());
-                return $this->redirectToRoute('home_index');
+                return $this->redirectToRoute('user_profile');
             } else {
                 $error = 'Nom d\'utilisateur ou mot de passe incorrect.';
             }
@@ -56,10 +54,5 @@ class LoginController extends AbstractController
     {
         $session->remove('connected_user');
         return $this->redirectToRoute('home_index');
-    }
-
-    private function isEmail(string $identifiant) : bool
-    {
-        return str_contains($identifiant, "@");
     }
 }
