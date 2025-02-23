@@ -27,7 +27,7 @@ Projet_Symfony is a web application built using the Symfony framework. The appli
     ### For Windows:
     - Download the appropriate release for your PHP version.
     - Go to the `php/ext` directory and put the downloaded file in it.
-    - In your `php.ini` file, add the following line:
+    - In your `php.ini` file, add the following line: 
       ```ini
       extension=php_mongodb.dll
       ```
@@ -39,6 +39,13 @@ Projet_Symfony is a web application built using the Symfony framework. The appli
       ```ini
       extension=mongodb.so
       ```
+
+      ### Finding `php.ini`:
+    - To find the location of your `php.ini` file, run the following command:
+      ```bash
+      php --ini
+      ```
+      
 3. Install dependencies:
     ```bash
     composer install
