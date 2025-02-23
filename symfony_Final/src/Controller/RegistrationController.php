@@ -58,13 +58,16 @@ class RegistrationController extends AbstractController
             
             $user->setPassword(password_hash($user->getPassword(), PASSWORD_BCRYPT));
 
-            $session->set('connected_user',$user->getId());
+            
             $this->dm->persist($user);
             $this->dm->flush(); 
+            $session->set('connected_user',$user->getId());
 
             
             
-            return $this->redirectToRoute('home_index');
+            return $this->redirectToRoute('user_profile',[
+                'connected' =>  true,
+            ]);
         }
 
         

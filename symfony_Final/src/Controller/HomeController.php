@@ -471,10 +471,18 @@ class HomeController extends AbstractController
         {
             return;
         }
-        $newLogs = $this->getPointsLogByUser($user->getId(),$user->getGroup() ? $user->getGroup()->getId() : null, $session);
-        $newInvit = $this->getInvitationByUser($user->getId(),$session);
-        $session->set('logs', array_map(function($log){return $log->getId();},$newLogs));
-        $session->set('invit', array_map(function($invitation){return $invitation->getId();},$newInvit));    
+        $newLogs = $this->getPointsLogByUser(
+            $user->getId(),
+            $user->getGroup() ? $user->getGroup()->getId() : null,
+            $session);
+        $newInvit = $this->getInvitationByUser(
+            $user->getId(),$session);
+        $session->set('logs', array_map(function($log){
+                return $log->getId();
+            },$newLogs));
+        $session->set('invit', array_map(function($invitation){
+                return $invitation->getId();
+            },$newInvit));    
     }
 
     private function getPointsLogByUser(?string $userId, ?string $groupId, SessionInterface $session) : array
