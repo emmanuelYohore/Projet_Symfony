@@ -4,8 +4,9 @@ declare(strict_types=1);
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
-
 use MongoDB\BSON\ObjectId;
+
+
 
 #[ODM\Document(collection: 'users')]
 #[ODM\Index(keys: ['username' => 'asc'], options: ['unique' => true])]
@@ -208,7 +209,7 @@ class User
     // Méthodes pour convertir entre ObjectId et string si nécessaire
     public function getGroupIdAsObjectId(): ?ObjectId
     {
-        return $this->group ? new ObjectId($this->group) : null;
+        return $this->group ? new ObjectId($this->group->getId()) : null;
     }
 
     public function setGroupIdFromObjectId(?ObjectId $group): self

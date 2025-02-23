@@ -130,6 +130,7 @@ class HomeController extends AbstractController
             'notifs' => [],
         ]);
         }
+        return $this->redirectToRoute('home_index');
     }
 
     #[Route('/habitica-home/delete/{id}', name: 'user_delete', methods: ['POST'])]
