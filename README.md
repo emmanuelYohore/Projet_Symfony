@@ -21,20 +21,38 @@ Projet_Symfony is a web application built using the Symfony framework. The appli
     cd Projet_Symfony/symfony_Final
     ```
 
-2. Install dependencies:
+2. Install mongodb 
+    Go to this website: [https://pecl.php.net/package/mongodb](https://pecl.php.net/package/mongodb)
+
+    ### For Windows:
+    - Download the appropriate release for your PHP version.
+    - Go to the `php/ext` directory and put the downloaded file in it.
+    - In your `php.ini` file, add the following line:
+      ```ini
+      extension=php_mongodb.dll
+      ```
+
+    ### For Linux:
+    - Download the appropriate release for your PHP version.
+    - Go to the `php/ext` directory and put the downloaded file in it.
+    - In your `php.ini` file, add the following line:
+      ```ini
+      extension=mongodb.so
+      ```
+3. Install dependencies:
     ```bash
     composer install
     npm install
     ```
 
-3. Start the development server:
+4. Start the development server:
     ```bash
     symfony server:start
     ```
 
-4. Access the application in your browser at `http://127.0.0.1:8000`.
+5. Access the application in your browser at `http://127.0.0.1:8000`.
 
-5. Every day at 4:00pm launch the command symfony bin/console app:clean-habit-completions it will check if every habit are done in the good period and reset the creation of habits
+6. Every day at 4:00pm launch the command symfony bin/console app:clean-habit-completions it will check if every habit are done in the good period or not and reset the creation of habits
 
 ## Usage
 
