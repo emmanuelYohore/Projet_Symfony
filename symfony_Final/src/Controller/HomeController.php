@@ -160,7 +160,11 @@ class HomeController extends AbstractController
 
         $userId = $session->get('connected_user');
         $connected = false;
-
+        $this->getNewNotifs($this->dm->getRepository(User::class)->find($userId),$session);
+        $logs = $this->dm->getRepository(PointLog::class)->findBy(['id' => ['$in' => $session->get('logs') ? $session->get('logs') : []]]);
+        $invits = $this->dm->getRepository(Invitation::class)->findBy(['id' => ['$in' => $session->get('invit')? $session->get('invit') : []]]);
+        $notifs = $this->getOrderedNotifs($logs,$invits,$this->dm->getRepository(User::class)->find($userId),$session);
+        
         if ($userId) {
             $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
             if ($user) {
@@ -216,6 +220,9 @@ class HomeController extends AbstractController
             'form' => $form->createView(),
             'groupId' => $groupId,
             'connected' => $connected,
+            'logs' => $logs,
+            'invitations' => $invits,
+            'allNotifs' => $notifs,
         ]);
     }
 
