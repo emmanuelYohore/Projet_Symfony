@@ -1,0 +1,6 @@
+.large-checkbox {
+    width: 20px;
+    height: 20px;
+    transform: scale(1.5);
+    margin-right: 10px;
+}

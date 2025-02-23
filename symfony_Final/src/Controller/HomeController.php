@@ -7,6 +7,7 @@ use App\Document\User;
 use App\Document\Group;
 use App\Document\HabitCompletion;
 use App\Document\PointLog;
+use App\Document\Invitation;
 use App\Form\HabitType;
 use App\Form\GroupType;
 use App\Form\UserType;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\CodePointString;
 
 class HomeController extends AbstractController
 {
@@ -26,6 +28,11 @@ class HomeController extends AbstractController
         $this->dm = $dm;
     }
 
+    #[Route('/', name:"rien", methods:['GET','POST'])]
+    public function redirection(Request $request) : Response
+    {
+        return $this->redirectToRoute('home_index');
+    }
     #[Route('/home', name: 'home_index', methods: ['GET', 'POST'])]
     public function index(Request $request,SessionInterface $session): Response
     {   
@@ -34,7 +41,10 @@ class HomeController extends AbstractController
         $userHabits = [];
         $groupHabits = [];
         $groups = [];
-
+        $this->getNewNotifs($this->dm->getRepository(User::class)->find($userId),$session);
+        $logs = $this->dm->getRepository(PointLog::class)->findBy(['id' => ['$in' => $session->get('logs') ? $session->get('logs') : []]]);
+        $invits = $this->dm->getRepository(Invitation::class)->findBy(['id' => ['$in' => $session->get('invit')? $session->get('invit') : []]]);
+        $notifs = $this->getOrderedNotifs($logs,$invits,$this->dm->getRepository(User::class)->find($userId),$session);
         if ($userId) {
             $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
             if ($user) {
@@ -64,19 +74,21 @@ class HomeController extends AbstractController
                 if ($user->getGroup()) {
                     $group = $user->getGroup();
                     $creator = $this->dm->getRepository(User::class)->find($group->getCreator()->getId());
-                    $group->creator = $creator;
+                    $group->setCreator($creator);
                 }
                 
                 if ($user->getGroup()) {
                     $groupHabits = $this->dm->getRepository(Habit::class)->findBy(['group_id' => $user->getGroup()->getId()]);
                 }
-
                 return $this->render('home/index.html.twig', [
                     'user' => $user,
                     'userHabits' => $userHabits,
                     'groupHabits' => $groupHabits,
                     'groups' => $groups,
                     'connected' => $connected,
+                    'logs' => $logs,
+                    'invitations' => $invits,
+                    'allNotifs' => $notifs,
                 ]);
             }
         } else {
@@ -113,6 +125,9 @@ class HomeController extends AbstractController
             'userHabits' => $userHabits,
             'groups' => $groups,
             'connected' => $connected,
+            'logs' => [],
+            'invit' => [],
+            'notifs' => [],
         ]);
         }
     }
@@ -145,7 +160,11 @@ class HomeController extends AbstractController
 
         $userId = $session->get('connected_user');
         $connected = false;
-
+        $this->getNewNotifs($this->dm->getRepository(User::class)->find($userId),$session);
+        $logs = $this->dm->getRepository(PointLog::class)->findBy(['id' => ['$in' => $session->get('logs') ? $session->get('logs') : []]]);
+        $invits = $this->dm->getRepository(Invitation::class)->findBy(['id' => ['$in' => $session->get('invit')? $session->get('invit') : []]]);
+        $notifs = $this->getOrderedNotifs($logs,$invits,$this->dm->getRepository(User::class)->find($userId),$session);
+        
         if ($userId) {
             $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $userId]);
             if ($user) {
@@ -201,12 +220,15 @@ class HomeController extends AbstractController
             'form' => $form->createView(),
             'groupId' => $groupId,
             'connected' => $connected,
+            'logs' => $logs,
+            'invitations' => $invits,
+            'allNotifs' => $notifs,
         ]);
     }
 
 
-    #[Route('/habitica-home/complete-habit/{userId}/{habitId}', name: 'complete_habit', methods: ['POST'])]
-    public function completeHabit(Request $request, string $userId, string $habitId ,SessionInterface $session): Response
+    #[Route('/habitica-home/complete-habit/{userId}/{habitId}/{in_group?}', name: 'complete_habit', methods: ['POST'])]
+    public function completeHabit(Request $request, string $userId, string $habitId, ?bool $in_group ,SessionInterface $session): Response
     {   
         $userId = $session->get('connected_user');
         $connected = false;
@@ -320,9 +342,17 @@ class HomeController extends AbstractController
 
         $this->dm->flush();
 
-        return $this->redirectToRoute('home_index', [
-            'connected' => $connected,
-        ]);
+        if ($in_group == true) {
+            return $this->redirectToRoute('view_group', [
+                'connected' => $connected,
+            ]);
+        } else {
+            return $this->redirectToRoute('home_index', [
+                'connected' => $connected,
+            ]);
+        }
+
+        
     }
 
     
@@ -360,5 +390,132 @@ class HomeController extends AbstractController
         return $this->redirectToRoute('home_index', [
             'connected' => $connected,
         ]);
+    }
+    #[Route('/accept/{groupId}/{invitId}', name: "accept_invit", methods: ['POST'])]
+    public function acceptInvitation(Request $request, SessionInterface $session, string $groupId, string $invitId) : Response
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+
+        $group = $this->dm->getRepository(Group::class)->find($groupId);
+        $user = $this->dm->getRepository(User::class)->find($session->get('connected_user'));
+        $user->setGroup($group);
+        $this->removeInvitation($invitId);
+        $pointLog = new PointLog();
+        $pointLog->setPointsChange(0);
+        $pointLog->setUser($user);
+        $pointLog->setGroup($group);
+        $pointLog->setReason($user->getUsername() . " joined your group " . $group->getName() . " !" );
+        $this->dm->persist($pointLog);
+        $this->dm->persist($user);
+        $this->dm->flush();
+        return $this->redirectToRoute('home_index', [
+            'connected' => $connected
+        ]);
+    }
+
+    #[Route('/decline/{groupId}/{invitId}', name: "decline_invit", methods: ['POST'])]
+    public function declineInvitation(Request $request, SessionInterface $session, string $groupId, string $invitId) : Response
+    {   
+        $userId = $session->get('connected_user');
+        $connected = false;
+
+        if ($userId) {
+            $connected = true;
+        }
+        
+        $group = $this->dm->getRepository(Group::class)->find($groupId);
+        $invit = $this->dm->getRepository(Invitation::class)->find($invitId);
+        $user = $this->dm->getRepository(User::class)->find($session->get('connected_user'));
+        $pointLog = new PointLog();
+        $pointLog->setPointsChange(0);
+        $pointLog->setUser($invit->getSender());
+        $pointLog->setGroup($group);
+        $pointLog->setReason($user->getUsername() . " declined your invitation.");
+        $this->dm->persist($pointLog);
+        $this->removeInvitation($invitId);
+        $this->dm->remove($invit);
+        $this->dm->flush();
+        return $this->redirectToRoute('home_index', [
+            'connected' => $connected
+        ]);
+
+        
+    }
+    private function removeInvitation(string $invitation)
+    {
+        $invit = $this->dm->getRepository(Invitation::class)->find($invitation);
+        $this->dm->remove($invit);
+    }
+
+    public function getOrderedNotifs(array $logs, array $invits,?User $user, SessionInterface $session):array 
+    {
+        if (!$user) {
+            return [];
+        }
+
+        $allNotifs = array_merge($logs, $invits);
+        usort($allNotifs, function ($a, $b) {
+            return $b->getTimestamp() <=> $a->getTimestamp();
+        });
+        return $allNotifs;
+    }
+
+    public function getNewNotifs(?User $user, SessionInterface $session)
+    {
+        if (!$user)
+        {
+            return;
+        }
+        $newLogs = $this->getPointsLogByUser($user->getId(),$user->getGroup() ? $user->getGroup()->getId() : null, $session);
+        $newInvit = $this->getInvitationByUser($user->getId(),$session);
+        $session->set('logs', array_map(function($log){return $log->getId();},$newLogs));
+        $session->set('invit', array_map(function($invitation){return $invitation->getId();},$newInvit));    
+    }
+
+    private function getPointsLogByUser(?string $userId, ?string $groupId, SessionInterface $session) : array
+    {
+        if (!$userId) {
+            return [];
+        }
+        $allPointsLog = $this->dm->getRepository(PointLog::class)->findAll();
+        $pointsLogs = [];
+        foreach($allPointsLog as $log)
+        {
+            if ($log->getUser()->getId() == $userId)
+            {
+                array_push($pointsLogs,$log);
+            } else if ($log->getGroup()) {
+                if ($log->getGroup()->getId() == $groupId) {
+                    array_push($pointsLogs, $log);
+            }}
+        }
+        $session->set('logs',array_map(function($log) {
+            return $log->getId();
+        },$pointsLogs));
+        return $pointsLogs;
+    }
+
+    private function getInvitationByUser(?string $userId,SessionInterface $session):array
+    {
+        if (!$userId) {
+            return [];
+        }
+        $allInvitations = $this->dm->getRepository(Invitation::class)->findAll();
+        $invitations = [];
+        foreach($allInvitations as $invit)
+        {
+            if ($invit->getReceiver()->getId() == $userId){
+                array_push($invitations,$invit);
+            }  
+        }
+        $session->set('invit',array_map(function($invit) {
+            return $invit->getId();
+        },$invitations));
+        return $invitations;
     }
 }

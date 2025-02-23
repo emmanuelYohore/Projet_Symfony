@@ -48,16 +48,17 @@ class RegistrationController extends AbstractController
                 }
 
                 $user->setProfilePicture($newFilename);
+                
             }
             else
             {
                 $user->setProfilePicture("default.png");
             }
 
-
+            
             $user->setPassword(password_hash($user->getPassword(), PASSWORD_BCRYPT));
 
-            
+            $session->set('connected_user',$user->getId());
             $this->dm->persist($user);
             $this->dm->flush(); 
 
@@ -69,6 +70,7 @@ class RegistrationController extends AbstractController
         
         return $this->render('registration/index.html.twig', [
             'form' => $form->createView(), 
+            'connected' => false,
         ]);
     }
 }
