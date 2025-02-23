@@ -35,7 +35,7 @@ class GroupController extends AbstractController
     }
 
     #[Route('/group', name: 'app_group')]
-    public function index(Request $request,SessionInterface $session): Response
+    public function index(Request $request,SessionInterface $session): Response 
     {   
         $userId = $session->get('connected_user');
         $connected = false;
@@ -46,7 +46,7 @@ class GroupController extends AbstractController
 
         if (!$session->get('connected_user'))
         {
-            return $this->redirectToRoute('home_index');
+            return $this->redirectToRoute('home_index'); 
         }
         $user = $this->dm->getRepository(User::class)->findOneBy(['id' => $session->get('connected_user')]);
         if (!$user->getGroup()) 
@@ -122,9 +122,17 @@ class GroupController extends AbstractController
         $connected = false;
         $control = new HomeController($this->dm);
         $control->getNewNotifs($this->dm->getRepository(User::class)->find($userId),$session);
-        $logs = $this->dm->getRepository(PointLog::class)->findBy(['id' => ['$in' => $session->get('logs') ? $session->get('logs') : []]]);
-        $invits = $this->dm->getRepository(Invitation::class)->findBy(['id' => ['$in' => $session->get('invit')? $session->get('invit') : []]]);
-        $notifs = $control->getOrderedNotifs($logs,$invits,$this->dm->getRepository(User::class)->find($userId),$session);
+        $logs = $this->dm->getRepository(PointLog::class)->findBy(
+            ['id' => [
+                '$in' => $session->get('logs') ? $session->get('logs') : []
+            ]]);
+        $invits = $this->dm->getRepository(Invitation::class)->findBy(
+            ['id' => [
+                '$in' => $session->get('invit')? $session->get('invit') : []
+            ]]);
+        $notifs = $control->getOrderedNotifs($logs,$invits,$this->dm->getRepository(User::class)
+            ->find($userId),$session
+        );
        
         if ($userId) {
             $connected = true;
@@ -136,12 +144,12 @@ class GroupController extends AbstractController
         {
             return $this->redirectToRoute('create_group');
         }
-        $formAddUser = $this->createForm(GroupType::class, $group);
-        $formAddUser->handleRequest($request);
-
         $habit = new Habit();
         $formAddTask = $this->createForm(HabitType::class, $habit);
         $formAddTask->handleRequest($request);
+
+        $formAddUser = $this->createForm(GroupType::class, $group);
+        $formAddUser->handleRequest($request);
         if ($formAddUser->isSubmitted() && $formAddUser->isValid())
         {
             $identifier = $formAddUser->get('emails')->getData();

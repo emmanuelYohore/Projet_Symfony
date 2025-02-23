@@ -36,15 +36,12 @@ class CleanHabitCompletionsCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        while (true) {
             $this->logger->info('Starting process to clean habit completions.');
             $this->cleaner->clean();
             $this->logger->info('Process succeeded.');
 
             $io->success('Checked and cleaned habit completions.');
 
-            sleep(3600);
-        }
 
         return Command::SUCCESS;
     }
