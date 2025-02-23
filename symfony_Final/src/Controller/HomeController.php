@@ -28,6 +28,11 @@ class HomeController extends AbstractController
         $this->dm = $dm;
     }
 
+    #[Route('/', name:"rien", methods:['GET','POST'])]
+    public function redirection(Request $request) : Response
+    {
+        return $this->redirectToRoute('home_index');
+    }
     #[Route('/home', name: 'home_index', methods: ['GET', 'POST'])]
     public function index(Request $request,SessionInterface $session): Response
     {   

@@ -55,7 +55,7 @@ class RegistrationController extends AbstractController
                 $user->setProfilePicture("default.png");
             }
 
-
+            
             $user->setPassword(password_hash($user->getPassword(), PASSWORD_BCRYPT));
 
             $session->set('connected_user',$user->getId());
