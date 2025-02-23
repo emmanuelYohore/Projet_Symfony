@@ -74,14 +74,6 @@ Projet_Symfony is a web application built using the Symfony framework. The appli
 - Group creators can create group habits that all group members can complete.
 - Group points are tracked based on the completion of group habits.
 
-## Contributing
-
-Contributions are welcome! Please fork the repository and create a pull request with your changes.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
 ## Acknowledgements
 
 - Symfony Framework
