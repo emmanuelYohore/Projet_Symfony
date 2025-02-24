@@ -257,6 +257,7 @@ class HomeController extends AbstractController
                 $habitCompletion = new HabitCompletion();
                 $habitCompletion->setUser($user);
                 $habitCompletion->setHabit($habit);
+                $habitCompletion->setStartDate(new \DateTime());
             }
 
             $habitCompletion->setCompleted(true);

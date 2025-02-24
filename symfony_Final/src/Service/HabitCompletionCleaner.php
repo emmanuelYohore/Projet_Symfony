@@ -127,6 +127,13 @@ class HabitCompletionCleaner
                 $this->dm->persist($group);
                 if ($group->getPoints() < 0) {
                     $this->dm->remove($group);
+
+                    $users = $this->dm->getRepository(User::class)->findBy(['group' => $group]);
+                    foreach ($users as $user) {
+                        $user->setGroup(null);
+                        $this->dm->persist($user);
+                    }
+                    
                     $pointsLog = new PointLog();
                     $pointsLog->setUser($habitCompletion->getUser());
                     $pointsLog->setGroup($group);
